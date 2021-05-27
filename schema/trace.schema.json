@@ -1,0 +1,42 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "dabao/trace.schema.json",
+    "title": "Dabao trace",
+    "description": "A trace of packets that can be analyzed in Dabao",
+    "definitions": {
+        "entry": {
+            "type": "object",
+            "properties": {
+                "timestamp": {
+                    "type": "number",
+                    "$comment": "Could be float or integer of some unit defined by #/properties/trace/precision"
+                },
+                "index": {
+                    "type": "integer",
+                    "$comment": "A unique index in the trace that allows ordering of entries when taken out of context"
+                },
+                "packet": { "$ref": "dabao/packet.schema.json" },
+                "path": {
+                    "$comment": "A list of graph node/edge IDs traversed by this packet, ordered source to destination",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "type": "object",
+    "properties": {
+        "precision": {
+            "enum": ["ps", "ns", "us", "ms", "s"],
+            "default": "s"
+        },
+        "entries": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/entry" }
+        }
+    },
+    "required": [ "precision", "entries" ],
+    "additionalProperties": false 
+}

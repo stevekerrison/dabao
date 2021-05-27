@@ -1,0 +1,19 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "dabao/workspace.schema.json",
+    "title": "Dabao workspace",
+    "description": "A workspace that can be used to analyze packets",
+    "type": "object",
+    "properties": {
+        "graph": {
+            "$comment": "The graph data we'll use to render the visualisation",
+            "$ref": "https://raw.githubusercontent.com/AZaitzeff/cytoscape_js_schema/main/cytoscape_schema.json"
+        },
+        "trace": {
+            "$comment": "The trace that will be analyzed",
+            "$ref": "dabao/trace.schema.json"
+        }
+    },
+    "required": [ "graph" ],
+    "additionalProperties": false 
+}

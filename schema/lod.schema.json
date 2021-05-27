@@ -1,0 +1,35 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "dabao/lod.schema.json",
+    "title": "Dabao Level of Detail (LoD) data type",
+    "description": "How to define what information to show at a given LoD",
+    "definitions": {
+        "lod": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "$comment": "The LoD name",
+                    "type": "string"
+                },
+                "id": {
+                    "$comment": "The LoD ID",
+                    "type": "string"
+                },
+                "path_detail": {
+                    "enum": ["full", "fly", "endpoints_only", "nodes_only", "edges_only"]
+                },
+                "trace_detail": {
+                    "$comment": "A list of packet components (ethernet_l1, arp, etc) and, optionally, fields to show (ipv4.source_ip_address, ...)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "type": "array",
+    "items": {
+        "$ref": "#/definitions/lod"
+    }
+}

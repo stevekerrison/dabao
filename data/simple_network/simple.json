@@ -1,0 +1,764 @@
+{
+    "graph": {
+        "layout": {
+            "name": "grid"
+          },
+
+          "style": [
+            {
+              "selector": "node",
+              "style": {
+                "background-color": "#2B65EC",
+                "content": "data(label)"
+
+              }
+            },
+            
+            {
+            "selector": "parent",
+              "style": {
+                "background-opacity": 0.333,
+                "border-color": "#2B65EC"
+              }
+            },
+
+            {
+              "selector": "edge",
+              "style": {
+                "line-color": "#2B65EC"
+              }
+            },
+            
+            {
+              "selector": "node:selected",
+              "style": {
+                "background-color": "#F08080",
+                "border-color": "red"
+              }
+            },
+            
+            {
+              "selector": "edge:selected",
+              "style": {
+                "line-color": "#F08080"
+              }
+            }                 
+          ],  
+          
+        "elements": [
+            { "group": "nodes", "data":{ "id": "internet", "label": "Internet"}},
+
+            { "group": "nodes", "data":{ "id": "homenet", "label": "Home network", "parent": "internet"}},
+            { "group": "nodes", "data":{ "id": "ispnet", "label": "ISP network", "parent": "internet"}},
+            { "group": "nodes", "data":{ "id": "corenet", "label": "Autonomous Systems", "parent": "internet"}},
+            { "group": "nodes", "data":{ "id": "dnsnet", "label": "DNS provider's network", "parent": "internet"}},
+            { "group": "nodes", "data":{ "id": "webnet", "label": "Webhost's network", "parent": "internet"}},
+
+            { "group": "nodes", "data":{ "id": "client", "label": "Client", "parent": "homenet", "interfaces": [{"targets": [], "ipv4": "192.168.111.20/24"}]}},
+            { "group": "nodes", "data":{ "id": "rgw", "label": "Residential gateway", "parent": "homenet", "interfaces": [{"targets": ["client"], "ipv4": "192.168.111.1/24"}]}},
+            { "group": "nodes", "data":{ "id": "ispgw", "label": "ISP gateway", "parent": "ispnet"}},
+            { "group": "nodes", "data":{ "id": "r0", "label": "Router", "parent": "ispnet"}},
+            { "group": "nodes", "data":{ "id": "r1", "label": "Router", "parent": "corenet"}},
+            { "group": "nodes", "data":{ "id": "r2", "label": "Router", "parent": "corenet"}},
+            { "group": "nodes", "data":{ "id": "r3", "label": "Router", "parent": "corenet"}},
+            { "group": "nodes", "data":{ "id": "r4", "label": "Router", "parent": "corenet"}},
+            { "group": "nodes", "data":{ "id": "dnsgw", "label": "DNS provider's gateway", "parent": "dnsnet", "interfaces": [{"targets": ["dns"], "ipv4": "10.200.0.1/26"}]}},
+            { "group": "nodes", "data":{ "id": "dns", "label": "DNS server", "parent": "dnsnet", "interfaces": [{"targets": [], "ipv4": "10.200.0.10/26"}]}},
+            { "group": "nodes", "data":{ "id": "webgw", "label": "Webhost's gateway", "parent": "webnet", "interfaces": [{"targets": ["we"], "ipv4": "10.225.0.254/24"}]}},
+            { "group": "nodes", "data":{ "id": "web", "label": "Web server", "parent": "webnet", "interfaces": [{"targets": [], "ipv4": "10.225.0.60/24"}]}},
+
+            { "group": "edges", "data":{ "id": "e_client_rgw", "source": "client", "target": "rgw"}},
+            { "group": "edges", "data":{ "id": "e_rgw_ispgw", "source": "rgw", "target": "ispgw"}},
+            { "group": "edges", "data":{ "id": "e_ispgw_r0", "source": "ispgw", "target": "r0"}},
+            { "group": "edges", "data":{ "id": "e_r0_r1", "source": "r0", "target": "r1"}},
+            { "group": "edges", "data":{ "id": "e_r0_r1", "source": "r0", "target": "r1"}},
+            { "group": "edges", "data":{ "id": "e_r0_r2", "source": "r0", "target": "r2"}},
+            { "group": "edges", "data":{ "id": "e_r1_r3", "source": "r1", "target": "r3"}},
+            { "group": "edges", "data":{ "id": "e_r2_r3", "source": "r2", "target": "r3"}},
+            { "group": "edges", "data":{ "id": "e_r2_r4", "source": "r2", "target": "r4"}},
+            { "group": "edges", "data":{ "id": "e_r3_r4", "source": "r3", "target": "r4"}},
+            { "group": "edges", "data":{ "id": "e_r2_dnsgw", "source": "r2", "target": "dnsgw"}},
+            { "group": "edges", "data":{ "id": "e_dnsgw_dns", "source": "dnsgw", "target": "dns"}},
+            { "group": "edges", "data":{ "id": "e_r4_webgw", "source": "r4", "target": "webgw"}},
+            { "group": "edges", "data":{ "id": "e_webgw_web", "source": "webgw", "target": "web"}}
+        ]
+    },
+    "trace": {
+        "entries": [
+            {"$comment": "Packets for a simple HTTP connection will go here, with ARP, UDP-DNS, then HTTP"},
+            {
+                "path": ["client", "e_client_rgw", "rgw"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AA:BB:CC:11:22:33"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "FF:FF:FF:FF:FF:FF"
+                    },
+                    "_payload": {
+                        "_schema_type": "arp",
+                        "operation": {
+                            "_schema_type": "descriptive_field",
+                            "value": "Request"
+                        },
+                        "sender_hardware_address": {
+                            "_schema_type": "decriptive_field",
+                            "value": "AA:BB:CC:11:22:33"
+                        },
+                        "sender_protocol_address": {
+                            "_schema_type": "decriptive_field",
+                            "value": "192.168.111.20"
+                        },
+                        "target_hardware_address": {
+                            "_schema_type": "decriptive_field",
+                            "value": "00:00:00:00:00:00"
+                        },
+                        "target_protocol_address": {
+                            "_schema_type": "decriptive_field",
+                            "value": "192.168.111.1"
+                        }
+                    }
+                }
+            },{
+                "path": ["rgw", "e_client_rgw", "client"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "DD:EE:FF:44:55:66"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AA:BB:CC:11:22:33"
+                    },
+                    "_payload": {
+                        "_schema_type": "arp",
+                        "operation": {
+                            "_schema_type": "descriptive_field",
+                            "value": "Reply"
+                        },
+                        "sender_hardware_address": {
+                            "_schema_type": "decriptive_field",
+                            "value": "AA:BB:CC:11:22:33"
+                        },
+                        "sender_protocol_address": {
+                            "_schema_type": "decriptive_field",
+                            "value": "192.168.111.20"
+                        },
+                        "target_hardware_address": {
+                            "_schema_type": "decriptive_field",
+                            "value": "DD:EE:FF:44:55:66"
+                        },
+                        "target_protocol_address": {
+                            "_schema_type": "decriptive_field",
+                            "value": "192.168.111.1"
+                        }
+                    }
+                }
+            },{
+                "path": ["client", "e_client_rgw", "rgw"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AA:BB:CC:11:22:33"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "DD:EE:FF:44:55:66"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "192.168.111.20"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 24983
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "What is the IP address of 'example.org'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["rgw", "e_rgw_ispgw", "ispgw"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "DD:EE:FF:44:55:77"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:12:34:56"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "What is the IP address of 'example.org'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["ispgw", "e_ispgw_r0", "r0"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:12:34:57"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:00:11:22"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "What is the IP address of 'example.org'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["r0", "e_r0_r2", "r2"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:00:11:23"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:11:22:33"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "What is the IP address of 'example.org'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["r2", "e_r2_dnsgw", "dnsgw"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:11:22:34"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:55:66:77"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "What is the IP address of 'example.org'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["dnsgw", "e_dnsgw_dns", "dns"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:55:66:78"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "DC:BA:FF:00:01:02"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "What is the IP address of 'example.org'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["dns", "e_dnsgw_dns", "dnsgw"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "DC:BA:FF:00:01:02"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:55:66:78"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "'example.org' has IP address '10.200.10.20'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["dnsgw", "e_r2_dnsgw", "r2"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:55:66:78"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:11:22:34"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "'example.org' has IP address '10.200.10.20'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["r2", "e_r0_r2", "r0"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:11:22:33"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:00:11:23"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "'example.org' has IP address '10.200.10.20'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["r0", "e_ispgw_r0", "ispgw"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:00:11:23"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:12:34:57"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "'example.org' has IP address '10.200.10.20'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["ispgw", "e_rgw_ispgw", "rgw"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:12:34:56"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "DD:EE:FF:44:55:77"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.0.0.50"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 13135
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "'example.org' has IP address '10.200.10.20'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            },{
+                "path": ["rgw", "e_client_rgw", "client"],
+                "packet": {
+                    "_schema_type": "ethernet_l2",
+                    "source_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "AB:CD:EF:12:34:56"
+                    },
+                    "destination_mac": {
+                        "_schema_type": "descriptive_field",
+                        "value": "DD:EE:FF:44:55:77"
+                    },
+                    "_payload": {
+                        "_schema_type": "ip",
+                        "version": {
+                            "_schema_type": "descriptive_field",
+                            "value": 4
+                        },
+                        "_payload": {
+                            "_schema_type": "ipv4",
+                            "source_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "10.100.0.100"
+                            },
+                            "destination_ip_address": {
+                                "_schema_type": "descriptive_field",
+                                "value": "192.168.111.20"
+                            },
+                            "protocol": {
+                                "_schema_type": "descriptive_field",
+                                "value": "UDP"
+                            },
+                            "_payload": {
+                                "_schema_type": "udp",
+                                "source_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 53
+                                },
+                                "destination_port": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": 24983
+                                },
+                                "_payload": {
+                                    "_schema_type": "descriptive_field",
+                                    "value": "'example.org' has IP address '10.200.10.20'?"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

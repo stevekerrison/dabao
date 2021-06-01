@@ -18,7 +18,12 @@
       <script src="https://unpkg.com/layout-base/layout-base.js"></script>
       <script src="https://unpkg.com/cose-base/cose-base.js"></script>
       <script src="https://unpkg.com/cytoscape-layout-utilities/cytoscape-layout-utilities.js"></script>
+      <!--<script src="cytoscape.js-fcose/cytoscape-fcose.js"></script>-->
       <script src="https://unpkg.com/cytoscape-fcose/cytoscape-fcose.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/avsdf-base"></script>
+      <script src="https://cdn.jsdelivr.net/npm/cytoscape-avsdf"></script>
+      <script src="https://cdn.jsdelivr.net/npm/cytoscape-layers"></script>
+      <script src="https://cdn.jsdelivr.net/npm/cytoscape-bubblesets"></script>
 
       <style>
         body {
@@ -137,7 +142,7 @@
 
       <script>
         document.addEventListener('DOMContentLoaded', function(){
-
+          let relativePlacementConstraint = [];
           var cy = window.cy = cytoscape({
             container: document.getElementById('cy'),
             
@@ -145,13 +150,96 @@
               let layoutUtilities = this.layoutUtilities({
                 desiredAspectRatio: this.width()/this.height(),
                 componentSpacing: 30
-              });              
+              });
+              var cy = this;
               this.nodes().forEach(function(node){
                 let size = 60;
                 node.css("width", size);
                 node.css("height", size);
               });
+              const bb = cy.bubbleSets();
+              let bbfn = function() {
+                var paths = new Map();
+                for (edge of cy.edges('[network]')) {
+                  let network = edge.data('network');
+                  if (!paths.has(network)) {
+                    paths.set(network, {edges: cy.collection(), nodes: cy.collection()});
+                  }
+                  let path = paths.get(network);
+                  let path_n = path.nodes;
+                  let path_e = path.edges;
+                  path_n = path_n.union(edge.source());
+                  path_n = path_n.union(edge.target());
+                  path_e = path_e.union(edge);
+                  path = {edges: path_e, nodes: path_n};
+                  paths.set(network, path);
+                }
+                let styles = [
+                  { stroke: '#ff0000', fill: '#ff000055' },
+                  { stroke: '#00ffff', fill: '#00ffff55' },
+                  { stroke: '#0000ff', fill: '#0000ff55' },
+                ];
+                let styleidx = 0;
+                for ([network, path] of paths.entries()) {
+                  console.log(network, path.nodes.map(function (e) { return e.data('id') }), path.edges.map(function (e) { return e.data('id') }));
+                  bb.addPath(path.nodes, path.edges, null, {
+                    virtualEdges: true,
+                    style: styles[styleidx++],
+                    throttle: 250
+                  });
+                  if (styleidx >= styles.length) { styleidx = 0; }
+                }
+              };
+              bbfn();
               this.layout({name: 'fcose', animationEasing: 'ease-out'}).run();
+              cy.on('mouseup', function(evt) {
+                for (path of bb.getPaths()) {
+                  bb.removePath(path);
+                }
+                bbfn();
+              });
+
+              cy.add({
+                group: 'nodes',
+                data: { id: '_packet', label: 'abc' },
+                style: {
+                  shape: 'cut-rectangle',
+                  width: 100,
+                  height: 50
+                }
+              });
+              cy.on('layoutstop', function(e) {
+                if (e.layout.options.name === 'grid') return;
+                cy.getElementById('_packet').delay(100).animate({
+                  position: { x: 500, y: 500 },
+                  duration: 1000,
+                  easing: 'ease-in-out-sine',
+                  complete: function(e) {
+                    cy.getElementById('_packet').animate({
+                      style: { height: 300 },
+                      position: { x: 500, y: 625 },
+                      easing: 'ease-in-out-sine',
+                    });
+                  }
+                });/*.delay(100).animate({
+                  style: { height: 400 },
+                  position: { x: 500, y: 650 }
+                }).play();*/
+              });
+              /*
+              cy.layout.on('layoutstop', null, function(e) {
+                console.log("WAH");
+                
+              });*/
+              /*for (node of this.nodes()) {
+                if (node.children().length > 0) {
+                  node.on('dragfreeon', function(evt) {
+                    console.log(evt.target.data('id'), 'dragfreeon');
+                    bb.update();
+                    console.log(bb);
+                  });
+                }
+              }*/
             },
             
             // demo your layout
@@ -165,7 +253,6 @@
                 style: {
                   'background-color': '#2B65EC',
                   'content': 'data(label)'
-
                 }
               },
               
@@ -203,39 +290,39 @@
             elements: [
                     { group: 'nodes', data:{ id: 'internet', label: "Internet"}},
                     /* Node groupings */
-                    { group: 'nodes', data:{ id: 'homenet', label: "Home network", parent: "internet"}},
-                    { group: 'nodes', data:{ id: 'ispnet', label: "ISP network", parent: "internet"}},
+                    { group: 'nodes', data:{ id: 'homenet', label: "Home", parent: "internet"}},
+                    { group: 'nodes', data:{ id: 'ispnet', label: "ISP", parent: "internet"}},
                     { group: 'nodes', data:{ id: 'corenet', label: "Autonomous Systems", parent: "internet"}},
-                    { group: 'nodes', data:{ id: 'dnsnet', label: "DNS provider's network", parent: "internet"}},
-                    { group: 'nodes', data:{ id: 'webnet', label: "Webhost's network", parent: "internet"}},
+                    { group: 'nodes', data:{ id: 'dnsnet', label: "DNS provider", parent: "internet"}},
+                    { group: 'nodes', data:{ id: 'webnet', label: "Webhost", parent: "internet"}},
                     /* Nodes */
                     { group: 'nodes', data:{ id: 'client', label: "Client", parent: "homenet", ips: ["192.168.74.30/24"]}},
-                    { group: 'nodes', data:{ id: 'rgw', label: "Residential gateway", parent: "homenet", ips: ["192.168.74.1/24", "10.0.1.49/30"]}},
+                    { group: 'nodes', data:{ id: 'rgw', label: "Residential gateway", parent: "homenet", piblings: ["ispnet"], ips: ["192.168.74.1/24", "10.0.1.49/30"]}},
                     { group: 'nodes', data:{ id: 'ispgw', label: "ISP gateway", parent: "ispnet"}},
-                    { group: 'nodes', data:{ id: 'r0', label: "Router", parent: "ispnet"}},
+                    { group: 'nodes', data:{ id: 'r0', label: "Router", parent: "ispnet", piblings: ["corenet"]}},
                     { group: 'nodes', data:{ id: 'r1', label: "Router", parent: "corenet"}},
-                    { group: 'nodes', data:{ id: 'r2', label: "Router", parent: "corenet"}},
+                    { group: 'nodes', data:{ id: 'r2', label: "Router", parent: 'corenet', piblings: ["corenet"]}},
                     { group: 'nodes', data:{ id: 'r3', label: "Router", parent: "corenet"}},
-                    { group: 'nodes', data:{ id: 'r4', label: "Router", parent: "corenet"}},
+                    { group: 'nodes', data:{ id: 'r4', label: "Router", parent: "corenet", piblings: ["corenet"]}},
                     { group: 'nodes', data:{ id: 'dnsgw', label: "DNS provider's gateway", parent: "dnsnet"}},
                     { group: 'nodes', data:{ id: 'dns', label: "DNS server", parent: "dnsnet"}},
                     { group: 'nodes', data:{ id: 'webgw', label: "Webhost's gateway", parent: "webnet"}},
                     { group: 'nodes', data:{ id: 'web', label: "Web server", parent: "webnet"}},
+
                     /* Edges */
-                    { group: 'edges', data:{ id: 'e_client_rgw', source: 'client', target: 'rgw'}},
-                    { group: 'edges', data:{ id: 'e_rgw_ispgw', source: 'rgw', target: 'ispgw'}},
-                    { group: 'edges', data:{ id: 'e_ispgw_r0', source: 'ispgw', target: 'r0'}},
-                    { group: 'edges', data:{ id: 'e_r0_r1', source: 'r0', target: 'r1'}},
-                    { group: 'edges', data:{ id: 'e_r0_r1', source: 'r0', target: 'r1'}},
-                    { group: 'edges', data:{ id: 'e_r0_r2', source: 'r0', target: 'r2'}},
-                    { group: 'edges', data:{ id: 'e_r1_r3', source: 'r1', target: 'r3'}},
-                    { group: 'edges', data:{ id: 'e_r2_r3', source: 'r2', target: 'r3'}},
-                    { group: 'edges', data:{ id: 'e_r2_r4', source: 'r2', target: 'r4'}},
-                    { group: 'edges', data:{ id: 'e_r3_r4', source: 'r3', target: 'r4'}},
-                    { group: 'edges', data:{ id: 'e_r2_dnsgw', source: 'r2', target: 'dnsgw'}},
-                    { group: 'edges', data:{ id: 'e_dnsgw_dns', source: 'dnsgw', target: 'dns'}},
-                    { group: 'edges', data:{ id: 'e_r4_webgw', source: 'r4', target: 'webgw'}},
-                    { group: 'edges', data:{ id: 'e_webgw_web', source: 'webgw', target: 'web'}},
+                    { group: 'edges', data:{ id: 'e_client_rgw', source: 'client', target: 'rgw', network: 'home'}},
+                    { group: 'edges', data:{ id: 'e_rgw_ispgw', source: 'rgw', target: 'ispgw', network: 'isp'}},
+                    { group: 'edges', data:{ id: 'e_ispgw_r0', source: 'ispgw', target: 'r0', network: 'isp'}},
+                    { group: 'edges', data:{ id: 'e_r0_r1', source: 'r0', target: 'r1', network: 'as'}},
+                    { group: 'edges', data:{ id: 'e_r0_r2', source: 'r0', target: 'r2', network: 'as'}},
+                    { group: 'edges', data:{ id: 'e_r1_r3', source: 'r1', target: 'r3', network: 'as'}},
+                    { group: 'edges', data:{ id: 'e_r2_r3', source: 'r2', target: 'r3', network: 'as'}},
+                    { group: 'edges', data:{ id: 'e_r2_r4', source: 'r2', target: 'r4', network: 'as'}},
+                    { group: 'edges', data:{ id: 'e_r3_r4', source: 'r3', target: 'r4', network: 'as'}},
+                    { group: 'edges', data:{ id: 'e_r2_dnsgw', source: 'r2', target: 'dnsgw', network: 'as'}},
+                    { group: 'edges', data:{ id: 'e_dnsgw_dns', source: 'dnsgw', target: 'dns', network: 'dns'}},
+                    { group: 'edges', data:{ id: 'e_r4_webgw', source: 'r4', target: 'webgw', network: 'as'}},
+                    { group: 'edges', data:{ id: 'e_webgw_web', source: 'webgw', target: 'web', network: 'web'}},
                    ]
             
           });          
@@ -275,8 +362,7 @@
               initialEnergyOnIncremental: document.getElementById("initialEnergyOnIncremental").value,
               step:"all"
             });
-            
-            layout.run();        
+            layout.run();
           });
           
         });

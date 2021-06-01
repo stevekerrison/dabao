@@ -65,7 +65,7 @@
                 "source_mac":           { "$ref": "#/definitions/descriptive_field" },
                 "destination_mac":      { "$ref": "#/definitions/descriptive_field" },
                 "ethertype":            { "$ref": "#/definitions/descriptive_field" },
-                "payload": { "anyOf": [
+                "_payload": { "anyOf": [
                     { "$ref": "#/definitions/raw" },
                     { "$ref": "#/definitions/descriptive_field" },
                     { "$ref": "#/definitions/arp" },
@@ -82,7 +82,7 @@
                 "_schema_type":     { "const": "ethernet_l1" },
                 "_raw":             { "$ref": "#/definitions/raw" },
                 "preamble":         { "$ref": "#/definitions/descriptive_field" },
-                "payload":          { "$ref": "#/definitions/ethernet_l2" },
+                "_payload":          { "$ref": "#/definitions/ethernet_l2" },
                 "interpacket_gap":  { "$ref": "#/definitions/descriptive_field" }            
             },
             "required": ["_schema_type"],
@@ -94,7 +94,7 @@
                 "_schema_type":     { "const": "ip" },
                 "_raw":             { "$ref": "#/definitions/raw" },
                 "version":          { "$ref": "#/definitions/descriptive_field" },
-                "versioned_packet": { "anyOf": [{ "$ref": "#/definitions/ipv4" }, { "$ref": "#/definitions/ipv6" }] }
+                "_payload": { "anyOf": [{ "$ref": "#/definitions/ipv4" }, { "$ref": "#/definitions/ipv6" }] }
             },
             "required": ["_schema_type"],
             "additionalProperties": false
@@ -143,7 +143,7 @@
                     "minItems": 0,
                     "maxItems": 20
                 },
-                "payload": { "anyOf": [
+                "_payload": { "anyOf": [
                     { "$ref": "#/definitions/raw" },
                     { "$ref": "#/definitions/descriptive_field" },
                     { "$ref": "#/definitions/tcp" },
@@ -170,7 +170,7 @@
                     "items": { "$ref": "#/definitions/ip_option" },
                     "minItems": 0
                 },
-                "payload": { "anyOf": [
+                "_payload": { "anyOf": [
                     { "$ref": "#/definitions/raw" },
                     { "$ref": "#/definitions/descriptive_field" },
                     { "$ref": "#/definitions/tcp" },
@@ -201,7 +201,10 @@
                     "minItems": 0,
                     "maxItems": 20
                 },
-                "payload":                  { "$ref": "#/definitions/raw" }
+                "_payload": { "anyOf": [
+                    { "$ref": "#/definitions/raw" },
+                    { "$ref": "#/definitions/descriptive_field" }
+                ]}
             },
             "required": ["_schema_type"],
             "additionalProperties": false
@@ -217,7 +220,10 @@
                 "source_port":      { "$ref": "#/definitions/descriptive_field" },
                 "destination_port": { "$ref": "#/definitions/descriptive_field" },
                 "checksum":         { "$ref": "#/definitions/descriptive_field" },
-                "payload":          { "$ref": "#/definitions/raw" }
+                "_payload": { "anyOf": [
+                    { "$ref": "#/definitions/raw" },
+                    { "$ref": "#/definitions/descriptive_field" }
+                ]}
             },
             "required": ["_schema_type"],
             "additionalProperties": false
@@ -225,10 +231,14 @@
     },
     "properties": {
         "_schema_type": { "const": "packet" },
-        "packet": { "oneOf": [
-            { "$ref": "#/definitions/ethernet_l1" },
-            { "$ref": "#/definitions/ethernet_l2" }
-        ]}
+        "packet": {
+            "$comment": "Depending on the LoD used, we can dive straight into end-to-end IP traffic, or look at each Ethernet hop",
+            "oneOf": [
+                { "$ref": "#/definitions/ethernet_l1" },
+                { "$ref": "#/definitions/ethernet_l2" },
+                { "$ref": "#/definitions/ip"}
+            ]
+        }
     },
     "required": [ "_schema_type", "packet" ],
     "additionalProperties": false 

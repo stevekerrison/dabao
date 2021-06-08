@@ -4,7 +4,7 @@
 <html>
 
   <head>
-    <title>cytoscape-fcose.js demo</title>
+    <title>Dabao - An educational network and packet visualiser</title>
 
       <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
       
@@ -27,6 +27,9 @@
       <script src="data/simple_network/simple.js"></script>
 
       <script src="https://cdn.jsdelivr.net/npm/cytoscape-automove"></script>
+      <script src="./ip-num.js"></script>
+
+      <script src="https://d3js.org/d3.v6.min.js"></script>
 
       <style>
         body {
@@ -39,108 +42,78 @@
           width: auto;
           height: 90%;
           z-index: 999;
-          margin-left: 290px;
           right: 0px;
+          margin-left: 300px;
         }
 
         h1 {
           opacity: 1;
           color: #555;
-          font-size: 15px;
+          font-size: 23px;
           font-weight: bold;
-          padding-top: 5px;
+          padding: 5px 0 0 0;
+        }
+
+        nav#navbar {
+          position: absolute;
+          text-align: center;
+          right: 5px;
+          top: 5px;
+          height: 20px;
+          width: 100px;
         }
                 
         /* The sidepanel menu */
-        .sidepanel {
+        aside#sidebar {
           height: auto; /* Specify a height */
-          width: 290px; /* 0 width - change this with JavaScript */
+          width: 300px; /* 0 width - change this with JavaScript */
           position: absolute; /* Stay in place */
           z-index: 1000; /* Stay on top */
           float: left;
-          top: auto;
+          top: 40px;
           left: 0;
+          bottom: 0;
           background-color: #b7ffff; /* Black*/
           overflow-x: hidden; /* Disable horizontal scroll */
-          padding-top: 10px; /* Place content 10px from the top */
-          padding-bottom: 10px; /* Place content 10px from the bottom */
-          transition: 0s; /* 0.5 second transition effect to slide in the sidepanel */
+          padding: 10px;
         }
 
-        table{
-          margin-left: 4px;
-          margin-right: auto;
-          table-layout: fixed;
-        }        
-        
-        /* The sidepanel links */
-        table td {
-          padding: 0px 8px 8px 8px;
-          text-decoration: none;
-          font-size: 13px;
-          color: #555;
-          transition: 0.3s;
-          vertical-align: middle;          
+        aside#sidebar h2 {
+          font-size: 20px;
+          font-weight: bold;
         }
 
-        /* Style the button that is used to open the sidepanel */
-        .button {
-          font-size: 15px;
-          color: #555;
-          cursor: pointer;
-          background-color: #b7ffff;
-          padding: 5px 10px;
-          border: none;
-          margin-bottom: 5px;
-        }
-        
-        .textField {
-          padding-left: 5px;
-        }
-        
-        .checkbox {
-          margin-left: 0px;
-        }        
-
-        .button:hover {
-          background-color: #0f0;
-        }
-        
-        .btn-group-sm>.btn, .btn-sm { 
-          font-size: 13px;
-          background-color: #7d8991;
-          border-color: #7d8991;
-        }
-        
-        .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
-            color: #fff;
-            background-color: #60717d;
-            border-color: #60717d; /*set the color you want here*/
-        }  
-        
-        .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary.active, .open>.dropdown-toggle.btn-primary {
-            color: #fff;
-            background-color: #60717d;
-            border-color: #60717d; /*set the color you want here*/
-        }         
-        
-        .form-control-sm { 
-          font-size: 13px
+        aside#sidebar h3 {
+          font-size: 17px;
+          font-weight: bold;
         }
 
-        .custom-select-sm {
-          font-size: 13px
-        } 
-        
-        .custom-control-label {
-          padding-top: 2px;
+        aside#sidebar section {
+          height: 45%;
+          max-height: 45%;
+          min-height: 45%;
         }
-        
-        .custom-control-input:checked~.custom-control-label::before {
-            color: #fff;
-            border-color: #7d8991;
-            background-color: #7d8991;
-        }   
+        aside#sidebar table {
+          width: 100%;
+          border-left: 1px solid #333;
+          border-right: 1px solid #333;
+        }
+
+        aside#sidebar tr {
+          border-top: 1px solid #333;
+          border-bottom: 1px solid #333;
+        }
+
+        #elementInfoTable tr td {
+          width: 100%;
+        }
+
+        #elementInfoTable tr td:first-child {
+          width: 100px;
+          min-width: 100px;
+          max-width: 100px;
+          word-break: break-all;
+        }
       </style>
 
       <script>
@@ -197,8 +170,10 @@
                   group: "edges", data: {"id": "_e_" + nodeid + netid, source: nodeid, target: netid, network: netid, weight: 10}
                 });
               }
+              simple(this);
               this.layout({
                 name: 'fcose', animationEasing: 'ease-out',
+                //alignmentConstraint: { horizontal: ['_net_as1', '_net_as2', '_net_isp'], vertical: [] },
                 idealEdgeLength: function (edge) {
                   return edge.data().weight * 5 || 150;
                 },
@@ -213,13 +188,23 @@
                   'background-opacity': 0.5,
                   'border-color': pal
                 });
+                this.style().selector('[network = "' + network.data('id') + '"]:selected').style({
+                  'background-opacity': 0.8,
+                  'border-color': '#ff0000'
+                });
                 this.style().selector('#' + network.data('id')).style({
                   'border-color': pal
+                });
+                this.style().selector('#' + network.data('id') +':selected').style({
+                  'border-color': '#ff0000'
                 });
                 this.style().selector(network.neighborhood().edges('[network = "' + network.data('id') + '"]')).style({
                   'line-color': pal,
                   'curve-style': 'bezier'
-                })
+                });
+                this.style().selector(network.neighborhood().edges('[network = "' + network.data('id') + '"]')).selector(':selected').style({
+                  'line-color': '#ff0000',
+                });
                 this.automove({
                   nodesMatching: network.neighborhood().nodes(),
                   reposition: 'drag',
@@ -227,6 +212,46 @@
                 });
               }
               this.style().update();
+              /*this.on('click', 'node[type != "network"]', evt => {
+                let node = evt.target;
+                console.log(node.id(), node.data('_ips').map(e => { return e.toString(); }));
+                return true;
+              });*/
+              this.on('select', null, evt => {
+                /* Only tabulate single selections */
+                if (this.$(':selected').length > 1) {
+                  tabulator('elementInfoTable', {});
+                  return;
+                }
+                tabulator('elementInfoTable', evt.target.data());
+              });
+              this.on('unselect', null, evt => {
+                /* If we deselect and have 1 element left, we can tabulate its data */
+                var selected = this.$(':selected');
+                if (selected.length != 1) {
+                  tabulator('elementInfoTable', {});
+                  return;
+                }
+                tabulator('elementInfoTable', selected.data());
+              });
+              var trace = simulate_http(this.getElementById('client'), this.getElementById('web'),
+`GET / HTTP/1.1
+Host: example.org
+
+`,
+`HTTP/1.1 200 OK
+
+<html><body>
+<h1>Hello World</h1>
+</body></html>`);
+              for (entry of trace.entries) {
+                console.log(entry.packet);
+              }
+              var pktanim = new dabao_packet_animation('packet',
+                  this.elements().floydWarshall().path('#client', '#web').nodes());
+              document.getElementById("next").addEventListener("click", (e) => {
+                pktanim.animate();
+              });
             },
             
             // demo your layout
@@ -286,22 +311,41 @@
               {
                 selector: 'node:selected',
                 style: {
-                  'background-color': '#F08080',
-                  'border-color': 'red'
+                  'border-color': '#ff0000'
                 }
               },
               
               {
                 selector: 'edge:selected',
                 style: {
-                  'line-color': '#F08080'
+                  'line-color': '#ff0000'
                 }
-              }                 
+              },
+              
+              {
+                selector: ':selected',
+                style: {
+                  'font-weight': 'bold'
+                }
+              },
+
+              {
+                selector: '#packet',
+                style: {
+                  'opacity': 0,
+                  'shape': 'round-rectangle',
+                  'width': 30,
+                  'height': 30,
+                  'border-width': 2,
+                  'background-color': '#ccc',
+                  'background-opacity': 0.33
+                }
+              }
             ],  
             
             elements: [
               /* Networks */
-              { group: 'nodes', data:{ id: '_net_home', type: 'network', label: "Home network"}},
+              { group: 'nodes', data:{ id: '_net_home', type: 'network', label: "Home network", subnet: "192.168.74.0/24"}},
               { group: 'nodes', data:{ id: '_net_isp', type: 'network', label: "ISP network"}},
               { group: 'nodes', data:{ id: '_net_as1', type: 'network', label: "AS-1 network"}},
               { group: 'nodes', data:{ id: '_net_as2', type: 'network', label: "AS-2 network"}},
@@ -309,8 +353,8 @@
               { group: 'nodes', data:{ id: '_net_web', type: 'network', label: 'Web network'}},
 
               /* Nodes. Network edges are auto-generated */
-              { group: 'nodes', data:{ id: 'client', label: "Client", network: "_net_home", ips: ["192.168.74.30/24"]}},
-              { group: 'nodes', data:{ id: 'rgw', label: "Residential gateway", network: "_net_home", ips: ["192.168.74.1/24", "10.0.1.49/30"]}},
+              { group: 'nodes', data:{ id: 'client', label: "Client", network: "_net_home", ips: ["192.168.74.30"]}},
+              { group: 'nodes', data:{ id: 'rgw', label: "Residential gateway", network: "_net_home", ips: ["192.168.74.1"]}},
               { group: 'nodes', data:{ id: 'ispgw', label: "ISP gateway", network: "_net_isp"}},
               { group: 'nodes', data:{ id: 'r0', label: "Router", network: "_net_isp"}},
               { group: 'nodes', data:{ id: 'r1', label: "Router", network: "_net_as1"}},
@@ -336,11 +380,60 @@
             ]
           });     
         });
+        
+        var tabulator = (table, data) => {
+          data = Object.entries(data);
+          var table = d3.select('#' + table).html("");
+          var thead = table.append('thead');
+          var	tbody = table.append('tbody');
+          if (!data.length) {
+            console.log("No data to show");
+          } else {
+            if (table.attr('id') === 'elementInfoTable') {
+              thead.append('tr')
+                .selectAll('th')
+                .data(['Field', 'Value']).enter()
+                .append('th')
+                .text(function (column) { return column; }
+              );
+              var rows = tbody.selectAll('tr')
+                .data(data.filter(ele => {
+                  return true;//!ele[0].startsWith('_');
+                }))
+                .enter()
+                .append('tr');
+
+              var cells = rows.selectAll('td')
+                .data(function (row) {
+                  return row;
+                })
+                .enter()
+                .append('td')
+                .text(function (d) { return d; });
+            }
+          }
+        }
       </script>
   </head>
 
   <body>
           <h1 class="ml-2">Dabao</h1>
+          <nav id="navbar">
+            <button id="next" type="button" value="Next">Next</button>
+          </nav>
+          <aside id="sidebar">
+            <h2>Info</h2>
+            <section id="packetInfo">
+              <h3>Packet info</h3>
+              <table id="packetInfoTable">
+              </table>
+            </section>
+            <section id="elementInfo">
+              <h3>Node/edge info</h3>
+              <table id="elementInfoTable">
+              </table>
+            </section>
+          </aside>
           <div id="cy"></div>
   </body>
 

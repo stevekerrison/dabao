@@ -227,6 +227,14 @@
             },
             "required": ["_schema_type"],
             "additionalProperties": false
+        },
+        "application": {
+            "type": "object",
+            "properties": {
+                "_schema_type":     { "const": "application" },
+                "_raw":             { "$ref": "#/definitions/raw" },
+                "_payload":         { "$ref": "#/definitions/descriptive_field" }
+            }
         }
     },
     "properties": {

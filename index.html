@@ -154,6 +154,7 @@
           let relativePlacementConstraint = [];
           var cy = window.cy = cytoscape({
             container: document.getElementById('cy'),
+            wheelSensitivity: 0.3,
             
             ready: function(){
               let layoutUtilities = this.layoutUtilities({
@@ -225,6 +226,19 @@
                 }
                 tabulator('elementInfoTable', evt.target.data());
               });
+              let sim = new DabaoHTTP({
+                cy: this,
+                client: this.getElementById('client'),
+                server: this.getElementById('web'),
+                host: 'example.org'
+              })
+              this.data('lod', new Set(['dns', 'udp', 'tcp_simple', 'ip', 'mac']));
+              this.data('fw', this.elements().floydWarshall());
+              console.log("Tracing with LoD:", ...this.data('lod').values())
+              for (let step of sim.trace()) {
+                console.log(step);
+              }
+              return
               this.on('unselect', null, evt => {
                 /* If we deselect and have 1 element left, we can tabulate its data */
                 var selected = this.$(':selected');
@@ -244,9 +258,6 @@ Host: example.org
 <html><body>
 <h1>Hello World</h1>
 </body></html>`);
-              for (entry of trace.entries) {
-                console.log(entry.packet);
-              }
               var pktanim = new dabao_packet_animation('packet',
                   this.elements().floydWarshall().path('#client', '#web').nodes());
               document.getElementById("next").addEventListener("click", (e) => {

@@ -282,8 +282,8 @@ class DabaoTCPPacket extends DabaoActivity {
         } else if (lod.has('tcp_simple')) {
             let ipPacket = new DabaoIP({
                 cy: this.cy,
-                sender: this.sender,
-                receiver: this.receiver,
+                sender: this.dir == 'send' ? this.sender : this.receiver,
+                receiver: this.dir == 'send' ? this.receiver : this.sender,
                 packet: {
                     "_schema_type": "tcp",
                     "_path": [this.sender, this.receiver],

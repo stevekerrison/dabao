@@ -46,22 +46,23 @@ class DabaoMAC extends DabaoActivity {
              */
             console.log("Generating path from", this.sender.id(), "to", this.receiver.id());
             var path = this.cy.data('fw').path(this.sender, this.receiver).nodes('[type != "network"]')
-            let pit = path[Symbol.iterator]()
-            let cur = this.sender
-            let next = pit.next().value
-            while(next != this.receiver) {
+            let cur;
+            for (node of path) {
+                if (node == this.sender) {
+                    console.log("Skipping self")
+                    cur = node
+                    continue
+                }
                 if (this.cy.data('lod').has('arp')) {
                     throw "ARP not implemented yet"
                 }
-                
                 yield {
                     "_schema_type": "ethernet_l2",
                     "source_mac": cur.id(),
-                    "destination_mac": next.id(),
+                    "destination_mac": node.id(),
                     "_payload": this.packet
                 }
-                cur = next
-                next = pit.next().value
+                cur = node
             }
         }
     }

@@ -24,15 +24,64 @@ class DabaoARP extends DabaoActivity {
         cy,
         querier,
         responder,
-        address
+        target,
+        source
     } = {}) {
         super({cy: cy, initiator: querier, sender: querier, receiver: responder})
-        this.address = address
+        this.target = target
+        this.source = source
+        this.querier = querier
+        this.responder = responder
+
     }
 
     *trace() {
         if (this.cy.data('lod').has('arp')) {
-            throw "ARP not implemented yet"
+            // Send the query
+            // TODO: assign IPs to interface edges, not just nodes
+            let tgtip = this.responder.data('_ips')[0].toString()
+            let srcip = this.querier.data('_ips')[0].toString()
+            let arp_cache = this.querier.data('_arpcache')
+            if (!arp_cache) {
+                arp_cache = new Set()
+            }
+            if (arp_cache.has(tgtip)) {
+                // No need to ARP
+                return
+            }
+            let result = {
+                "_schema_type": "ethernet_l2",
+                "_path": [this.querier, this.responder],
+                "source_mac": this.source,
+                "destination_mac": 'FF:FF:FF:FF:FF:FF',
+                "_payload": {
+                    "_schema_type": "arp",
+                    "_description": `Who has ${tgtip}? Tell ${this.source}`
+                }
+            }
+            console.log(result)
+            yield result
+            // Cache the result
+            arp_cache.add(tgtip)
+            this.querier.data('_arpcache', arp_cache)
+            // Presume the responder will remember the sender too
+            let r_arp_cache = this.responder.data('_arpcache')
+            if (!r_arp_cache) {
+                r_arp_cache = new Set()
+            }
+            r_arp_cache.add(srcip)
+            this.responder.data('_arpcache', r_arp_cache)
+            
+            yield {
+                "_schema_type": "ethernet_l2",
+                "_path": [this.responder, this.querier],
+                "source_mac": this.target,
+                "destination_mac": this.source,
+                "_payload": {
+                    "_schema_type": "arp",
+                    "_description": `{tgtip} is at {this.target}`
+                }
+            }
         }
     }
 }
@@ -81,9 +130,10 @@ class DabaoMAC extends DabaoActivity {
                 }
                 let arp = new DabaoARP({
                     cy: this.cy,
-                    querier: this.sender,
-                    responder: this.receiver,
-                    address: 'TODO'
+                    querier: cur,
+                    responder: node,
+                    target: dstmac,
+                    source: srcmac
                 })
                 for (let packet of arp.trace()) {
                     yield packet
@@ -631,6 +681,9 @@ class dabao_packet_animation {
         if (!this.in_network) {
             this.cy.elements(':selected').unselect()
             vizpath.select()
+            if (this.itv.value.destination_mac == 'FF:FF:FF:FF:FF:FF') {
+                vizpath.nodes('[type = "network"]').neighbourhood().select()
+            }
         }
         switch (vizpath.nodes().size()) {
             case 2:

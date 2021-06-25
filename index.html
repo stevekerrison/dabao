@@ -232,7 +232,7 @@
                 server: this.getElementById('web'),
                 host: 'example.org'
               })
-              this.data('lod', new Set(['dns', 'udp', 'tcp_simple', 'ip', 'mac']));
+              this.data('lod', new Set(['dns', 'udp', 'tcp_simple', 'ip', 'mac', 'arp']));
               this.data('fw', this.elements().floydWarshall());
               console.log("Tracing with LoD:", ...this.data('lod').values())
               this.on('unselect', null, evt => {

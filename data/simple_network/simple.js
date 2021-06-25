@@ -63,12 +63,21 @@ class DabaoMAC extends DabaoActivity {
              * 3. Optionally do ARP checks
              */
             console.log("Generating path from", this.sender.id(), "to", this.receiver.id());
-            var path = this.cy.data('fw').path(this.sender, this.receiver).nodes('[type != "network"]')
+            let path = this.cy.data('fw').path(this.sender, this.receiver)
+            let nodes = path.nodes('[type != "network"]')
             let cur;
-            for (node of path) {
+            for (node of nodes) {
                 if (node == this.sender) {
                     cur = node
                     continue
+                }
+                let subpath = this.cy.data('fw').path(cur, node).edges()
+                let srcmac, dstmac
+                for (let edge of subpath) {
+                    let d = edge.data('_MAC-' + cur.id())
+                    if (d) srcmac = d
+                    d = edge.data('_MAC-' + node.id())
+                    if (d) dstmac = d
                 }
                 let arp = new DabaoARP({
                     cy: this.cy,
@@ -78,14 +87,16 @@ class DabaoMAC extends DabaoActivity {
                 })
                 for (let packet of arp.trace()) {
                     yield packet
-                }
-                yield {
+                }                
+                let result = {
                     "_schema_type": "ethernet_l2",
                     "_path": [cur, node],
-                    "source_mac": cur.id(),
-                    "destination_mac": node.id(),
+                    "source_mac": srcmac,
+                    "destination_mac": dstmac,
                     "_payload": this.packet
                 }
+                console.log(result)
+                yield result
                 cur = node
             }
         }
@@ -421,6 +432,60 @@ Host: ${this.host}
     }
 }
 
+class MAC {
+    constructor(value) {
+        this.value = value
+    }
+
+    toString() {
+        let bytes = new Array()
+        for (let byte = 5; byte >= 0; byte -= 1) {
+            bytes.push(Number((this.value >> (byte * 8)) & 0xff).toString(16).toUpperCase().padStart(2, '0'))
+        }
+        return bytes.join(':')
+    }
+}
+
+class MACRandomiser {
+    constructor() {
+        this.pool = new Set()
+    }
+
+    /**
+     * Generate a random MAC.
+     * 
+     * Optionally fix portions of the MAC. Returned value is (R & ~mask) | fixed
+     * where R is a random integer in range 0 to (2^48)-1.
+     * 
+     * Uniqueness is guaranteed.
+     * 
+     * @param {integer} fixed The value used for fixed bits
+     * @param {integer} mask Bitmask
+     * @returns {integer} The random MAC
+     */
+    generate({fixed = [], mask = []} = {}) {
+        if (fixed.length != mask.length) {
+            throw "Fixed value and mask arrays must be same length"
+        }
+        for (let attempts = 0; attempts < 5; attempts += 1) {
+            let bytes = new Array()
+            for (let byte = 0; byte < 6; byte += 1) {
+                let val = getRandomInt(0, 256)
+                if (fixed.length >= byte + 1) {
+                    val &= ~mask[byte]
+                    val |= fixed[byte]
+                }
+                bytes.push(Number(val).toString(16).toUpperCase().padStart(2, '0'))
+            }
+            let mac = bytes.join(':')
+            if (!this.pool.has(mac)) {
+                this.pool.add(mac)
+                return mac
+            }
+        }
+        throw "Failed to allocate random MAC. Pool may be getting full or fixed constraints may limit pool size"
+    }
+}
 
 function simple(cy) {
     // Network to use to generate IP addresses. It will still avoid existing networks
@@ -486,7 +551,16 @@ function simple(cy) {
             target.data('_ips').map(e => { return e.toString(); })
         );
     }
+    let macgen = new MACRandomiser()
     for (var node of cy.nodes('[type != "network"]')) {
+        for (let edge of node.neighbourhood('edge')) {
+            let mac = macgen.generate({
+                fixed: [0xda, 0xba, 0x00, 0x00, 0x00, 0x00],
+                mask: [0xff, 0xff, 0xf0, 0x00, 0x00, 0x00]
+            })
+        
+            edge.data('_MAC-' + node.id(), mac)
+        }
         console.log(node.id(), node.data('_ips').map(e => { return e.toString(); }));
     }
 }
@@ -499,7 +573,7 @@ function getRandomInt(min, max) {
 }
 
 class dabao_packet_animation {
-    constructor(cy, packetid, trace, auto = true) {
+    constructor(cy, packetid, trace, auto = true, pps = 0.5) {
         this.packetid = packetid;
         this.trace = trace
         this.auto = auto;
@@ -508,6 +582,7 @@ class dabao_packet_animation {
         this.itv = this.trace.next()
         this.cy = cy
         this.in_network = false
+        this.pps = pps
     }
 
     animate() {
@@ -515,13 +590,14 @@ class dabao_packet_animation {
         if (this.remove) {
             console.log("Removing packet node")
             this.packet.remove()
+            this.cy.elements(':selected').unselect()
             // Done!
             return;
         }
         if (!this.packet) {
             let segment = this.itv.value['_path']
             document.getElementById("next").disabled = this.auto
-            var curpos = segment[0].position()
+            let curpos = segment[0].position()
             console.log("Creating node and easing in");
             this.packet = this.cy.add({
                 'group': 'nodes',
@@ -551,19 +627,21 @@ class dabao_packet_animation {
         }
         let curnode = this.itv.value['_path'][0];
         let nextnode = this.itv.value['_path'][1];
-        let vizpath = this.cy.data('fw').path(curnode, nextnode).nodes()
-        switch (vizpath.size()) {
+        let vizpath = this.cy.data('fw').path(curnode, nextnode)
+        if (!this.in_network) {
+            this.cy.elements(':selected').unselect()
+            vizpath.select()
+        }
+        switch (vizpath.nodes().size()) {
             case 2:
                 // Nothing to do
                 break
             case 3:
                 if (this.in_network) {
-                    curnode = vizpath[1]
+                    curnode = vizpath.nodes()[1]
                     this.in_network = false
                 } else {
-                    curnode.edgesTo(nextnode).select()
-                    vizpath.select()
-                    nextnode = vizpath[1]
+                    nextnode = vizpath.nodes()[1]
                     this.in_network = true
                 }
                 break
@@ -572,8 +650,11 @@ class dabao_packet_animation {
         }
         var nextpos = nextnode.position()
         var ease = 'linear';
+        let curpos = curnode.position()
+        let distance = Math.sqrt((curpos.x - nextpos.x) ** 2 + (curpos.y - nextpos.y) ** 2)
+        let duration = distance / this.pps
         this.packet.animate({
-            'duration': 500,
+            'duration': duration,
             'position': { x: nextpos.x + 20, y: nextpos.y + 40 },
             'easing': ease,
             'style': { 'opacity': 1.0 },

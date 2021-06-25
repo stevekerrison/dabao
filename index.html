@@ -235,10 +235,6 @@
               this.data('lod', new Set(['dns', 'udp', 'tcp_simple', 'ip', 'mac']));
               this.data('fw', this.elements().floydWarshall());
               console.log("Tracing with LoD:", ...this.data('lod').values())
-              for (let step of sim.trace()) {
-                console.log(step);
-              }
-              return
               this.on('unselect', null, evt => {
                 /* If we deselect and have 1 element left, we can tabulate its data */
                 var selected = this.$(':selected');
@@ -248,18 +244,7 @@
                 }
                 tabulator('elementInfoTable', selected.data());
               });
-              var trace = simulate_http(this.getElementById('client'), this.getElementById('web'),
-`GET / HTTP/1.1
-Host: example.org
-
-`,
-`HTTP/1.1 200 OK
-
-<html><body>
-<h1>Hello World</h1>
-</body></html>`);
-              var pktanim = new dabao_packet_animation('packet',
-                  this.elements().floydWarshall().path('#client', '#web').nodes());
+              var pktanim = new dabao_packet_animation(this, 'packet', sim.trace()); //TODO: Make packet animation generator friendly
               document.getElementById("next").addEventListener("click", (e) => {
                 pktanim.animate();
               });
@@ -398,7 +383,7 @@ Host: example.org
           var thead = table.append('thead');
           var	tbody = table.append('tbody');
           if (!data.length) {
-            console.log("No data to show");
+            //console.log("No data to show");
           } else {
             if (table.attr('id') === 'elementInfoTable') {
               thead.append('tr')

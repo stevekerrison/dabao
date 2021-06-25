@@ -641,6 +641,7 @@ class dabao_packet_animation {
             console.log("Removing packet node")
             this.packet.remove()
             this.cy.elements(':selected').unselect()
+            tabulator('packetInfoTable', {})
             // Done!
             return;
         }
@@ -684,6 +685,7 @@ class dabao_packet_animation {
             if (this.itv.value.destination_mac == 'FF:FF:FF:FF:FF:FF') {
                 vizpath.nodes('[type = "network"]').neighbourhood().select()
             }
+            tabulator('packetInfoTable', this.itv.value)
         }
         switch (vizpath.nodes().size()) {
             case 2:

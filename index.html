@@ -406,6 +406,39 @@
                 .enter()
                 .append('td')
                 .text(function (d) { return d; });
+            } else if (table.attr('id') === 'packetInfoTable') {
+              thead.append('tr')
+                .selectAll('th')
+                .data(['Field', 'Value']).enter()
+                .append('th')
+                .text(function (column) { return column; }
+              );
+              function data_flatten(data) {
+                let ret = []
+                for (row of data) {
+                  let name, value
+                  [name, value] = row
+                  if (!name.startsWith('_')) {
+                    ret.push([name, value])
+                  } else if (name === '_payload') {
+                    ret.push(...data_flatten(Object.entries(value)))
+                  }
+                }
+                return ret
+              }
+              data = data_flatten(data)
+              var rows = tbody.selectAll('tr')
+                .data(data)
+                .enter()
+                .append('tr');
+
+              var cells = rows.selectAll('td')
+                .data(function (row) {
+                  return row;
+                })
+                .enter()
+                .append('td')
+                .text(function (d) { return d; });
             }
           }
         }

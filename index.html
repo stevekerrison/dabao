@@ -402,9 +402,11 @@
           });     
         });
         
+        var old_data = [];
         var tabulator = (table, data) => {
           data = Object.entries(data);
-          var table = d3.select('#' + table).html("");
+          var table = d3.select('#' + table)
+          table.html("")
           var thead = table.append('thead');
           var	tbody = table.append('tbody');
           if (!data.length) {
@@ -432,6 +434,14 @@
                 .append('td')
                 .text(function (d) { return d; });
             } else if (table.attr('id') === 'packetInfoTable') {
+              /**
+               * TODO: I don't want to empty and recreate this table each time
+               * Instead, I want to animate the changes to eaach row, highlighting:
+               * - deleted rows
+               * - new rows
+               * - changed values
+               * - Values that have moved (useful for identifying swaps and direction changes)
+               */
               thead.append('tr')
                 .selectAll('th')
                 .data(['Field', 'Value']).enter()
@@ -457,8 +467,28 @@
                 }
                 return ret
               }
-              console.log(data)
               data = data_flatten(data)
+              let matched_keys = -1
+              let matching = true
+              let changed_rows = []
+              let old_values = new Set()
+              let new_value = new Set()
+              console.log("Comparing", old_data, "to", data)
+              for (let i = 0; i < old_data.length && i < data.length; i += 1) {
+                old_values.add(old_data[i][1])
+                new_values.add(data[i][1])
+                if (old_data[i][0] === data[i][0]) {
+                  matched_keys += 1
+                  if (old_data[i][1] !== new_data[i][1]) {
+                    changed_rows.push(i)
+                  }
+                } else {
+                  matching = false
+                  break // Disparity between table row names observed, so give up on matching
+                }
+              }
+              console.log("Matching keys", matching_keys)
+              old_data = data
               var rows = tbody.selectAll('tr')
                 .data(data)
                 .enter()

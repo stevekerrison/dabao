@@ -43,7 +43,7 @@
           height: 90%;
           z-index: 999;
           right: 0px;
-          margin-left: 300px;
+          margin-left: 30%;
         }
 
         h1 {
@@ -116,6 +116,11 @@
 
         #elementInfoTable tr td {
           width: 100%;
+        }
+
+        .tableSection {
+          font-weight: bold;
+          font-style: italic;
         }
 
         #elementInfoTable tr td:first-child {
@@ -257,6 +262,7 @@
               var pktanim = new dabao_packet_animation({cy: this, packetid: 'packet', trace: sim.trace(), auto: false}); //TODO: Make packet animation generator friendly
               document.getElementById("next").addEventListener("click", (e) => {
                 pktanim.animate();
+                document.getElementById("pause").innerHTML = 'Resume'
               });
               document.getElementById("pause").addEventListener("click", (e) => {
                 console.log(e.target.innerHTML)
@@ -438,18 +444,26 @@
                   let name, value
                   [name, value] = row
                   if (!name.startsWith('_')) {
-                    ret.push([name, value])
+                    if (typeof value === 'object' && '_schema_type' in value) {
+                      ret.push([name, value.value])
+                    } else {
+                      ret.push([name, value])
+                    }
+                  } else if (name === '_schema_type' && !['descriptive_field', 'raw'].some((ele) => { return ele === value })) {
+                    ret.push(["Detail", value])
                   } else if (name === '_payload') {
                     ret.push(...data_flatten(Object.entries(value)))
                   }
                 }
                 return ret
               }
+              console.log(data)
               data = data_flatten(data)
               var rows = tbody.selectAll('tr')
                 .data(data)
                 .enter()
-                .append('tr');
+                .append('tr')
+                .attr("class", function (d) { return d[0] === 'Detail' ? 'tableSection' : '' });
 
               var cells = rows.selectAll('td')
                 .data(function (row) {

@@ -56,7 +56,10 @@ class DabaoARP extends DabaoActivity {
                 "destination_mac": 'FF:FF:FF:FF:FF:FF',
                 "_payload": {
                     "_schema_type": "arp",
-                    "_description": `Who has ${tgtip}? Tell ${this.source}`
+                    "_payload": {
+                        "_schema_type": "descriptive_field",
+                        "value": `Who has ${tgtip}? Tell ${this.source}`
+                    }
                 }
             }
             console.log(result)
@@ -79,7 +82,10 @@ class DabaoARP extends DabaoActivity {
                 "destination_mac": this.source,
                 "_payload": {
                     "_schema_type": "arp",
-                    "_description": `{tgtip} is at {this.target}`
+                    "_payload": {
+                        "_schema_type": "descriptive_field",
+                        "value": `${tgtip} is at ${this.target}`
+                    }
                 }
             }
         }

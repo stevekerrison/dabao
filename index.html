@@ -62,6 +62,10 @@
           height: 20px;
           width: 200px;
         }
+
+        nav#navbar button#pause {
+          width: 5em;
+        }
                 
         /* The sidepanel menu */
         aside#sidebar {
@@ -255,7 +259,8 @@
                 pktanim.animate();
               });
               document.getElementById("pause").addEventListener("click", (e) => {
-                if (e.target.innerHTML !== 'Resume') {
+                console.log(e.target.innerHTML)
+                if (e.target.innerHTML !== 'Pause') {
                   e.target.innerHTML = 'Pause'
                 } else {
                   e.target.innerHTML = 'Resume'

@@ -56,17 +56,17 @@
 
         nav#navbar {
           position: absolute;
-          text-align: center;
+          text-align: right;
           right: 5px;
           top: 5px;
           height: 20px;
-          width: 100px;
+          width: 200px;
         }
                 
         /* The sidepanel menu */
         aside#sidebar {
           height: auto; /* Specify a height */
-          width: 300px; /* 0 width - change this with JavaScript */
+          width: 30%; /* 0 width - change this with JavaScript */
           position: absolute; /* Stay in place */
           z-index: 1000; /* Stay on top */
           float: left;
@@ -88,15 +88,21 @@
           font-weight: bold;
         }
 
-        aside#sidebar section {
-          height: 45%;
-          max-height: 45%;
-          min-height: 45%;
+        section#packetInfo {
+          height: 70%;
+          max-height: 70%;
+          min-height: 70%;
+        }
+        section#elementInfo {
+          height: 25%;
+          max-height: 25%;
+          min-height: 25%;
         }
         aside#sidebar table {
           width: 100%;
           border-left: 1px solid #333;
           border-right: 1px solid #333;
+          font-size: 10pt;
         }
 
         aside#sidebar tr {
@@ -244,9 +250,17 @@
                 }
                 tabulator('elementInfoTable', selected.data());
               });
-              var pktanim = new dabao_packet_animation(this, 'packet', sim.trace()); //TODO: Make packet animation generator friendly
+              var pktanim = new dabao_packet_animation({cy: this, packetid: 'packet', trace: sim.trace(), auto: false}); //TODO: Make packet animation generator friendly
               document.getElementById("next").addEventListener("click", (e) => {
                 pktanim.animate();
+              });
+              document.getElementById("pause").addEventListener("click", (e) => {
+                if (e.target.innerHTML !== 'Resume') {
+                  e.target.innerHTML = 'Pause'
+                } else {
+                  e.target.innerHTML = 'Resume'
+                }
+                pktanim.pause();
               });
             },
             
@@ -448,7 +462,8 @@
   <body>
           <h1 class="ml-2">Dabao</h1>
           <nav id="navbar">
-            <button id="next" type="button" value="Next">Next</button>
+            <button id="next" type="button" value="Next">Step</button>
+            <button id="pause" type="button" value="Pause">Start</button>
           </nav>
           <aside id="sidebar">
             <h2>Info</h2>

@@ -623,7 +623,7 @@ function getRandomInt(min, max) {
 }
 
 class dabao_packet_animation {
-    constructor(cy, packetid, trace, auto = true, pps = 0.5) {
+    constructor({cy, packetid, trace, auto = true, pps = 0.5} = {}) {
         this.packetid = packetid;
         this.trace = trace
         this.auto = auto;
@@ -635,8 +635,15 @@ class dabao_packet_animation {
         this.pps = pps
     }
 
+    pause() {
+        this.auto = !this.auto
+        if (this.auto) this.animate()
+    }
+
+
     animate() {
         var nextfunc = this.auto ? this.animate.bind(this) : undefined;
+        document.getElementById("next").disabled = this.auto
         if (this.remove) {
             console.log("Removing packet node")
             this.packet.remove()
@@ -647,7 +654,6 @@ class dabao_packet_animation {
         }
         if (!this.packet) {
             let segment = this.itv.value['_path']
-            document.getElementById("next").disabled = this.auto
             let curpos = segment[0].position()
             console.log("Creating node and easing in");
             this.packet = this.cy.add({

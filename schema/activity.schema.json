@@ -1,0 +1,35 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "dabao/trace.schema.json",
+    "title": "Dabao activity",
+    "description": "An activity generates a trace",
+    "type": "object",
+    "properties": {
+        "description": {
+            "type": "string",
+            "description": "A written description of the activity"
+        },
+        "initiator": {
+            "type": "string",
+            "description": "The ID of the node that initiated the session/connection that this activity takes place on. For a purely stateless activity, the sender is the initiator." 
+        },
+        "handler": {
+            "type": "object",
+            "properties": {
+                "class": {
+                    "type": "string",
+                    "description": "Name of handler class that can expand the initial trace"
+                },
+                "args": {
+                    "type": "array",
+                    "description": "Arguments passed to handler in order to generate the trace"
+                }
+            }            
+        },
+        "trace": {
+            "$ref": "dabao/trace.schema.json"
+        }
+    },
+    "required": [ "handler" ],
+    "additionalProperties": false 
+}

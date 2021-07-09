@@ -1,0 +1,253 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "dabao/packet.schema.json",
+    "title": "Dabao packet",
+    "description": "Information about a data packet that can be depicted in Dabao",
+    "type": "object",
+    "definitions": {
+        "raw": {
+            "type": "array",
+            "description": "The raw bytes in a packet or field therein",
+            "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255
+            }
+        },
+        "descriptive_field": {
+            "type": "object",
+            "description": "A descriptive equivalent of a field contents, for example the decoded value or represented command",
+            "properties": {
+                "_schema_type":      { "const": "descriptive_field" },
+                "value": { "type": ["string", "number"] },
+                "name": { "type": "string" },
+                "description": { "type": "string" },
+                "startsAt": {
+                    "type": "integer",
+                    "description": "The byte index of the field within the parent field"
+                },
+                "length": {
+                    "type": "integer",
+                    "description": "The number of bytes this field occupies"
+                },
+                "mask": {
+                    "type": "integer",
+                    "description": "For bit-fields, the bits to mask from the referenced byte range"
+                }
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "arp": {
+            "type": "object",
+            "properties": {
+                "_schema_type":             { "const": "arp" },
+                "_raw":                     { "$ref": "#/definitions/raw" },
+                "hardware_type":            { "$ref": "#/definitions/descriptive_field" },
+                "protocol_type":            { "$ref": "#/definitions/descriptive_field" },
+                "hardware_address_length":  { "$ref": "#/definitions/descriptive_field" },
+                "protocol_address_length":  { "$ref": "#/definitions/descriptive_field" },
+                "operation":                { "$ref": "#/definitions/descriptive_field" },
+                "sender_hardware_address":  { "$ref": "#/definitions/descriptive_field" },
+                "sender_protocol_address":  { "$ref": "#/definitions/descriptive_field" },
+                "target_hardware_address":  { "$ref": "#/definitions/descriptive_field" },
+                "target_protocol_address":  { "$ref": "#/definitions/descriptive_field" },
+                "_description":             { "type": "string" }
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "ethernet_l2": {
+            "type": "object",
+            "properties": {
+                "_schema_type":         { "const": "ethernet_l2" },
+                "_raw":                 { "$ref": "#/definitions/raw" },
+                "source_mac":           { "$ref": "#/definitions/descriptive_field" },
+                "destination_mac":      { "$ref": "#/definitions/descriptive_field" },
+                "ethertype":            { "$ref": "#/definitions/descriptive_field" },
+                "_payload": { "anyOf": [
+                    { "$ref": "#/definitions/raw" },
+                    { "$ref": "#/definitions/descriptive_field" },
+                    { "$ref": "#/definitions/arp" },
+                    { "$ref": "#/definitions/ip" }
+                ]},
+                "frame_check_sequence": { "$ref": "#/definitions/descriptive_field" }
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "ethernet_l1": {
+            "type": "object",
+            "properties": {
+                "_schema_type":     { "const": "ethernet_l1" },
+                "_raw":             { "$ref": "#/definitions/raw" },
+                "preamble":         { "$ref": "#/definitions/descriptive_field" },
+                "_payload":          { "$ref": "#/definitions/ethernet_l2" },
+                "interpacket_gap":  { "$ref": "#/definitions/descriptive_field" }            
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "ip": {
+            "type": "object",
+            "properties": {
+                "_schema_type":     { "const": "ip" },
+                "_raw":             { "$ref": "#/definitions/raw" },
+                "version":          { "$ref": "#/definitions/descriptive_field" },
+                "_payload": { "anyOf": [{ "$ref": "#/definitions/ipv4" }, { "$ref": "#/definitions/ipv6" }] }
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "ip_option": {
+            "type": "object",
+            "properties": {
+                "_schema_type": { "const": "ip_option" },
+                "_raw":         { "$ref": "#/definitions/raw" },
+                "copied":       { "$ref": "#/definitions/descriptive_field" },
+                "class":        { "$ref": "#/definitions/descriptive_field" },
+                "number":       { "$ref": "#/definitions/descriptive_field" },
+                "length":       { "$ref": "#/definitions/descriptive_field" },
+                "data":         { "$ref": "#/definitions/descriptive_field" }
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "ip_extension": {
+            "type": "object",
+            "$comment": "TODO: Define fields for IP extension headers",
+            "properties": {
+                "_schema_type":  { "const": "ip_extension" },
+                "_raw":          { "$ref": "#/definitions/raw" }
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "ipv4": {
+            "type": "object",
+            "properties": {
+                "_schema_type":                         { "const": "ipv4" },
+                "_raw":                                 { "$ref": "#/definitions/raw" },
+                "internet_header_length":               { "$ref": "#/definitions/descriptive_field" },
+                "differentiated_services_code_point":   { "$ref": "#/definitions/descriptive_field" },
+                "explicit_congestion_notification":     { "$ref": "#/definitions/descriptive_field" },
+                "total_length":                         { "$ref": "#/definitions/descriptive_field" },
+                "time_to_live":                         { "$ref": "#/definitions/descriptive_field" },
+                "protocol":                             { "$ref": "#/definitions/descriptive_field" },
+                "header_checksum":                      { "$ref": "#/definitions/descriptive_field" },
+                "source_ip_address":                    { "$ref": "#/definitions/descriptive_field" },
+                "destination_ip_address":               { "$ref": "#/definitions/descriptive_field" },
+                "options": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/ip_option" },
+                    "minItems": 0,
+                    "maxItems": 20
+                },
+                "_payload": { "anyOf": [
+                    { "$ref": "#/definitions/raw" },
+                    { "$ref": "#/definitions/descriptive_field" },
+                    { "$ref": "#/definitions/tcp" },
+                    { "$ref": "#/definitions/udp" }
+                ]}
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "ipv6": {
+            "type": "object",
+            "properties": {
+                "_schema_type":         { "const": "ipv6" },
+                "_raw":                 { "$ref": "#/definitions/raw" },
+                "traffic_class":        { "$ref": "#/definitions/descriptive_field" },
+                "flow_label":           { "$ref": "#/definitions/descriptive_field" },
+                "payload_length":       { "$ref": "#/definitions/descriptive_field" },
+                "next_header":          { "$ref": "#/definitions/descriptive_field" },
+                "hop_limit":            { "$ref": "#/definitions/descriptive_field" },
+                "source_address":       { "$ref": "#/definitions/descriptive_field" },
+                "destination_address":  { "$ref": "#/definitions/descriptive_field" },
+                "extension_headers": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/ip_option" },
+                    "minItems": 0
+                },
+                "_payload": { "anyOf": [
+                    { "$ref": "#/definitions/raw" },
+                    { "$ref": "#/definitions/descriptive_field" },
+                    { "$ref": "#/definitions/tcp" },
+                    { "$ref": "#/definitions/udp" }
+                ]}
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "tcp": {
+            "type": "object",
+            "properties": {
+                "_schema_type":             { "const": "tcp" },
+                "_raw":                     { "$ref": "#/definitions/raw" },
+                "source_port":              { "$ref": "#/definitions/descriptive_field" },
+                "destination_port":         { "$ref": "#/definitions/descriptive_field" },
+                "sequence_number":          { "$ref": "#/definitions/descriptive_field" },
+                "acknowledgement_number":   { "$ref": "#/definitions/descriptive_field" },
+                "data_offset":              { "$ref": "#/definitions/descriptive_field" },
+                "reserved":                 { "$ref": "#/definitions/descriptive_field" },
+                "flags":                    { "$ref": "#/definitions/descriptive_field" },
+                "window_size":              { "$ref": "#/definitions/descriptive_field" },
+                "checksum":                 { "$ref": "#/definitions/descriptive_field" },
+                "urgent_pointer":           { "$ref": "#/definitions/descriptive_field" },
+                "options": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/tcp_option" },
+                    "minItems": 0,
+                    "maxItems": 20
+                },
+                "_payload": { "anyOf": [
+                    { "$ref": "#/definitions/raw" },
+                    { "$ref": "#/definitions/descriptive_field" }
+                ]}
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "tcp_option": {
+            "$comment": "TODO: Define TCP option headers"
+        },
+        "udp": {
+            "type": "object",
+            "properties": {
+                "_schema_type":     { "const": "udp" },
+                "_raw":             { "$ref": "#/definitions/raw" },
+                "source_port":      { "$ref": "#/definitions/descriptive_field" },
+                "destination_port": { "$ref": "#/definitions/descriptive_field" },
+                "checksum":         { "$ref": "#/definitions/descriptive_field" },
+                "_payload": { "anyOf": [
+                    { "$ref": "#/definitions/raw" },
+                    { "$ref": "#/definitions/descriptive_field" }
+                ]}
+            },
+            "required": ["_schema_type"],
+            "additionalProperties": false
+        },
+        "application": {
+            "type": "object",
+            "properties": {
+                "_schema_type":     { "const": "application" },
+                "_raw":             { "$ref": "#/definitions/raw" },
+                "_payload":         { "$ref": "#/definitions/descriptive_field" }
+            }
+        }
+    },
+    "properties": {
+        "_schema_type": { "const": "packet" },
+        "packet": {
+            "$comment": "Depending on the LoD used, we can dive straight into end-to-end IP traffic, or look at each Ethernet hop",
+            "oneOf": [
+                { "$ref": "#/definitions/ethernet_l1" },
+                { "$ref": "#/definitions/ethernet_l2" },
+                { "$ref": "#/definitions/ip"}
+            ]
+        }
+    },
+    "required": [ "_schema_type", "packet" ],
+    "additionalProperties": false 
+}

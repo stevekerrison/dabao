@@ -1,0 +1,51 @@
+[
+    {
+        "id": "L2",
+        "name": "Layer 2",
+        "trace_detail": ["ethernet_l2.*"]
+    },
+    {
+        "id": "L3",
+        "name": "Layer 3",
+        "trace_detail": [
+            "arp.protocol_type",
+            "arp.operation",
+            "arp.sender_hardware_address",
+            "arp.sender_protocol_address",
+            "arp.target_hardware_address",
+            "arp.target_protocol_address",
+
+            "ip.version",
+
+            "ipv4.protocol",
+            "ipv4.source_ip_addres",
+            "ipv4.detination_ip_address",
+
+            "ipv6.protocol",
+            "ipv6.next_header",
+            "ipv6.source_address",
+            "ipv6.destination_addres"
+        ]
+    },
+    {
+        "id": "L4",
+        "name": "Layer 4",
+        "trace_detail": [
+            "tcp.source_port",
+            "tcp.destination_port",
+            "tcp.sequence_number",
+            "tcp.acknowledgement_number",
+
+            "udp.source_port",
+            "udp.destination_port"
+        ]
+    },
+    {
+        "id": "L5-L7",
+        "name": "Layers 5 to 7",
+        "trace_detail": [
+            "tcp._raw",
+            "udp._raw"
+        ]
+    }
+]

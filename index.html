@@ -1,17 +1,16 @@
 
 <!DOCTYPE>
 <!-- Starting from https://ivis-at-bilkent.github.io/cytoscape.js-fcose/demo/demo-compound.html -->
-<html>
+<html lang="en-sg">
 
   <head>
-    <title>cytoscape-fcose.js demo</title>
+    <title>Dabao - An educational network and packet visualiser</title>
 
       <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
       
       <!-- Bootstrap, popper, jQuery and filesaver - for demo purpose only -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
-      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>      
+      <!-- I'm not using bootstrap for anything, but have walked myself into using its CSS, for now -->
       <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">       
 
       <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
@@ -19,6 +18,12 @@
       <script src="https://unpkg.com/cose-base/cose-base.js"></script>
       <script src="https://unpkg.com/cytoscape-layout-utilities/cytoscape-layout-utilities.js"></script>
       <script src="https://unpkg.com/cytoscape-fcose/cytoscape-fcose.js"></script>
+      <script src="data/simple_network/simple.js"></script>
+
+      <script src="https://cdn.jsdelivr.net/npm/cytoscape-automove"></script>
+      <script src="./ip-num.js"></script>
+
+      <script src="https://d3js.org/d3.v6.min.js"></script>
 
       <style>
         body {
@@ -31,127 +36,237 @@
           width: auto;
           height: 90%;
           z-index: 999;
-          margin-left: 290px;
           right: 0px;
+          margin-left: 30%;
         }
 
         h1 {
           opacity: 1;
           color: #555;
-          font-size: 15px;
+          font-size: 23px;
           font-weight: bold;
-          padding-top: 5px;
+          padding: 5px 0 0 0;
+        }
+
+        nav#navbar {
+          position: absolute;
+          text-align: right;
+          right: 5px;
+          top: 5px;
+          height: 20px;
+          width: 200px;
+        }
+
+        nav#navbar button#pause {
+          width: 5em;
         }
                 
         /* The sidepanel menu */
-        .sidepanel {
+        aside#sidebar {
           height: auto; /* Specify a height */
-          width: 290px; /* 0 width - change this with JavaScript */
+          width: 30%; /* 0 width - change this with JavaScript */
           position: absolute; /* Stay in place */
           z-index: 1000; /* Stay on top */
           float: left;
-          top: auto;
+          top: 40px;
           left: 0;
+          bottom: 0;
           background-color: #b7ffff; /* Black*/
           overflow-x: hidden; /* Disable horizontal scroll */
-          padding-top: 10px; /* Place content 10px from the top */
-          padding-bottom: 10px; /* Place content 10px from the bottom */
-          transition: 0s; /* 0.5 second transition effect to slide in the sidepanel */
+          padding: 10px;
         }
 
-        table{
-          margin-left: 4px;
-          margin-right: auto;
-          table-layout: fixed;
-        }        
-        
-        /* The sidepanel links */
-        table td {
-          padding: 0px 8px 8px 8px;
-          text-decoration: none;
-          font-size: 13px;
-          color: #555;
-          transition: 0.3s;
-          vertical-align: middle;          
+        aside#sidebar h2 {
+          font-size: 20px;
+          font-weight: bold;
         }
 
-        /* Style the button that is used to open the sidepanel */
-        .button {
-          font-size: 15px;
-          color: #555;
-          cursor: pointer;
-          background-color: #b7ffff;
-          padding: 5px 10px;
-          border: none;
-          margin-bottom: 5px;
-        }
-        
-        .textField {
-          padding-left: 5px;
-        }
-        
-        .checkbox {
-          margin-left: 0px;
-        }        
-
-        .button:hover {
-          background-color: #0f0;
-        }
-        
-        .btn-group-sm>.btn, .btn-sm { 
-          font-size: 13px;
-          background-color: #7d8991;
-          border-color: #7d8991;
-        }
-        
-        .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open>.dropdown-toggle.btn-primary {
-            color: #fff;
-            background-color: #60717d;
-            border-color: #60717d; /*set the color you want here*/
-        }  
-        
-        .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active, .btn-outline-primary.active, .open>.dropdown-toggle.btn-primary {
-            color: #fff;
-            background-color: #60717d;
-            border-color: #60717d; /*set the color you want here*/
-        }         
-        
-        .form-control-sm { 
-          font-size: 13px
+        aside#sidebar h3 {
+          font-size: 17px;
+          font-weight: bold;
         }
 
-        .custom-select-sm {
-          font-size: 13px
-        } 
-        
-        .custom-control-label {
-          padding-top: 2px;
+        section#packetInfo {
+          height: 70%;
+          max-height: 70%;
+          min-height: 70%;
         }
-        
-        .custom-control-input:checked~.custom-control-label::before {
-            color: #fff;
-            border-color: #7d8991;
-            background-color: #7d8991;
-        }   
+        section#elementInfo {
+          height: 25%;
+          max-height: 25%;
+          min-height: 25%;
+        }
+        aside#sidebar table {
+          width: 100%;
+          border-left: 1px solid #333;
+          border-right: 1px solid #333;
+          font-size: 10pt;
+        }
+
+        aside#sidebar tr {
+          border-top: 1px solid #333;
+          border-bottom: 1px solid #333;
+        }
+
+        #elementInfoTable tr td {
+          width: 100%;
+        }
+
+        .tableSection {
+          font-weight: bold;
+          font-style: italic;
+        }
+
+        #elementInfoTable tr td:first-child {
+          width: 100px;
+          min-width: 100px;
+          max-width: 100px;
+          word-break: break-all;
+        }
       </style>
 
       <script>
+        const palette = [
+          "#43c8ac",
+          "#ca407d",
+          "#5eb757",
+          "#bb4ca3",
+          "#a1c74f",
+          "#5559bb",
+          "#c0aa32",
+          "#7b81eb",
+          "#758f25",
+          "#ab6fce",
+          "#5dc67f",
+          "#543382",
+          "#68903b",
+          "#cf87d0",
+          "#3a7a3a",
+          "#d74d5e",
+          "#608dd6",
+          "#cb8631",
+          "#82295e",
+          "#c1b35d",
+          "#932742",
+          "#806621",
+          "#d8739f",
+          "#d49058",
+          "#942e35",
+          "#c65930",
+          "#d75f77",
+          "#862e17",
+          "#d87764",
+          "#d54a4a"
+        ];
+        var paletteidx = 0;
         document.addEventListener('DOMContentLoaded', function(){
-
+          let relativePlacementConstraint = [];
           var cy = window.cy = cytoscape({
             container: document.getElementById('cy'),
+            wheelSensitivity: 0.3,
             
             ready: function(){
               let layoutUtilities = this.layoutUtilities({
                 desiredAspectRatio: this.width()/this.height(),
                 componentSpacing: 30
-              });              
-              this.nodes().forEach(function(node){
-                let size = 60;
-                node.css("width", size);
-                node.css("height", size);
               });
-              this.layout({name: 'fcose', animationEasing: 'ease-out'}).run();
+
+              /* Connect nodes to their networks */
+              for (node of this.nodes('[network]')) {
+                var network = this.getElementById(node.data('network')),
+                    netid = network.data('id'),
+                    nodeid = node.data('id');
+                this.add({
+                  group: "edges", data: {"id": "_e_" + nodeid + netid, source: nodeid, target: netid, network: netid, weight: 10}
+                });
+              }
+              simple(this);
+              this.layout({
+                name: 'fcose', animationEasing: 'ease-out',
+                //alignmentConstraint: { horizontal: ['_net_as1', '_net_as2', '_net_isp'], vertical: [] },
+                idealEdgeLength: function (edge) {
+                  return edge.data().weight * 5 || 150;
+                },
+                edgeElasticity: function (edge) {
+                  return edge.data().weight * 0.045 || 5;
+                }}).run();
+              for (network of this.nodes('[type = "network"]')) {
+                let pal = palette[paletteidx++];
+                if (paletteidx >= palette.length) paletteidx = 0;
+                this.style().selector('[network = "' + network.data('id') + '"]').style({
+                  'background-color': pal,
+                  'background-opacity': 0.5,
+                  'border-color': pal
+                });
+                this.style().selector('[network = "' + network.data('id') + '"]:selected').style({
+                  'background-opacity': 0.8,
+                  'border-color': '#ff0000'
+                });
+                this.style().selector('#' + network.data('id')).style({
+                  'border-color': pal
+                });
+                this.style().selector('#' + network.data('id') +':selected').style({
+                  'border-color': '#ff0000'
+                });
+                this.style().selector(network.neighborhood().edges('[network = "' + network.data('id') + '"]')).style({
+                  'line-color': pal,
+                  'curve-style': 'bezier'
+                });
+                this.style().selector(network.neighborhood().edges('[network = "' + network.data('id') + '"]')).selector(':selected').style({
+                  'line-color': '#ff0000',
+                });
+                this.automove({
+                  nodesMatching: network.neighborhood().nodes(),
+                  reposition: 'drag',
+                  dragWith: network
+                });
+              }
+              this.style().update();
+              /*this.on('click', 'node[type != "network"]', evt => {
+                let node = evt.target;
+                console.log(node.id(), node.data('_ips').map(e => { return e.toString(); }));
+                return true;
+              });*/
+              this.on('select', null, evt => {
+                /* Only tabulate single selections */
+                if (this.$(':selected').length > 1) {
+                  tabulator('elementInfoTable', {});
+                  return;
+                }
+                tabulator('elementInfoTable', evt.target.data());
+              });
+              let sim = new DabaoHTTP({
+                cy: this,
+                client: this.getElementById('client'),
+                server: this.getElementById('web'),
+                host: 'example.org'
+              })
+              this.data('lod', new Set(['dns', 'udp', 'tcp_simple', 'ip', 'mac', 'arp']));
+              this.data('fw', this.elements().floydWarshall());
+              console.log("Tracing with LoD:", ...this.data('lod').values())
+              this.on('unselect', null, evt => {
+                /* If we deselect and have 1 element left, we can tabulate its data */
+                var selected = this.$(':selected');
+                if (selected.length != 1) {
+                  tabulator('elementInfoTable', {});
+                  return;
+                }
+                tabulator('elementInfoTable', selected.data());
+              });
+              var pktanim = new dabao_packet_animation({cy: this, packetid: 'packet', trace: sim.trace(), auto: false}); //TODO: Make packet animation generator friendly
+              document.getElementById("next").addEventListener("click", (e) => {
+                pktanim.animate();
+                document.getElementById("pause").innerHTML = 'Resume'
+              });
+              document.getElementById("pause").addEventListener("click", (e) => {
+                console.log(e.target.innerHTML)
+                if (e.target.innerHTML !== 'Pause') {
+                  e.target.innerHTML = 'Pause'
+                } else {
+                  e.target.innerHTML = 'Resume'
+                }
+                pktanim.pause();
+              });
             },
             
             // demo your layout
@@ -164,8 +279,23 @@
                 selector: 'node',
                 style: {
                   'background-color': '#2B65EC',
-                  'content': 'data(label)'
+                  'content': 'data(label)',
+                  'width': 60,
+                  'height': 60,
+                  'shape': 'square',
+                  'border-width': 5,
+                }
+              },
 
+              {
+                selector: 'node[type = "network"]',
+                style: {
+                  'background-color': 'white',
+                  'content': 'data(label)',
+                  'width': 30,
+                  'height': 30,
+                  'border-width': 3,
+                  'shape': 'ellipse'
                 }
               },
               
@@ -180,226 +310,218 @@
               {
                 selector: 'edge',
                 style: {
-                  'line-color': '#2B65EC'
+                  'curve-style': 'bezier',
+                  'width': 3
+                }
+              },
+
+              {
+                selector: 'edge[^network]',
+                style: {
+                  'line-color': '#999999',
+                  'width': 3,
                 }
               },
               
               {
                 selector: 'node:selected',
                 style: {
-                  'background-color': '#F08080',
-                  'border-color': 'red'
+                  'border-color': '#ff0000'
                 }
               },
               
               {
                 selector: 'edge:selected',
                 style: {
-                  'line-color': '#F08080'
+                  'line-color': '#ff0000'
                 }
-              }                 
+              },
+              
+              {
+                selector: ':selected',
+                style: {
+                  'font-weight': 'bold'
+                }
+              },
+
+              {
+                selector: '#packet',
+                style: {
+                  'opacity': 0,
+                  'shape': 'round-rectangle',
+                  'width': 30,
+                  'height': 30,
+                  'border-width': 2,
+                  'background-color': '#ccc',
+                  'background-opacity': 0.33
+                }
+              }
             ],  
             
             elements: [
-                    { group: 'nodes', data:{ id: 'internet', label: "Internet"}},
-                    /* Node groupings */
-                    { group: 'nodes', data:{ id: 'homenet', label: "Home network", parent: "internet"}},
-                    { group: 'nodes', data:{ id: 'ispnet', label: "ISP network", parent: "internet"}},
-                    { group: 'nodes', data:{ id: 'corenet', label: "Autonomous Systems", parent: "internet"}},
-                    { group: 'nodes', data:{ id: 'dnsnet', label: "DNS provider's network", parent: "internet"}},
-                    { group: 'nodes', data:{ id: 'webnet', label: "Webhost's network", parent: "internet"}},
-                    /* Nodes */
-                    { group: 'nodes', data:{ id: 'client', label: "Client", parent: "homenet", ips: ["192.168.74.30/24"]}},
-                    { group: 'nodes', data:{ id: 'rgw', label: "Residential gateway", parent: "homenet", ips: ["192.168.74.1/24", "10.0.1.49/30"]}},
-                    { group: 'nodes', data:{ id: 'ispgw', label: "ISP gateway", parent: "ispnet"}},
-                    { group: 'nodes', data:{ id: 'r0', label: "Router", parent: "ispnet"}},
-                    { group: 'nodes', data:{ id: 'r1', label: "Router", parent: "corenet"}},
-                    { group: 'nodes', data:{ id: 'r2', label: "Router", parent: "corenet"}},
-                    { group: 'nodes', data:{ id: 'r3', label: "Router", parent: "corenet"}},
-                    { group: 'nodes', data:{ id: 'r4', label: "Router", parent: "corenet"}},
-                    { group: 'nodes', data:{ id: 'dnsgw', label: "DNS provider's gateway", parent: "dnsnet"}},
-                    { group: 'nodes', data:{ id: 'dns', label: "DNS server", parent: "dnsnet"}},
-                    { group: 'nodes', data:{ id: 'webgw', label: "Webhost's gateway", parent: "webnet"}},
-                    { group: 'nodes', data:{ id: 'web', label: "Web server", parent: "webnet"}},
-                    /* Edges */
-                    { group: 'edges', data:{ id: 'e_client_rgw', source: 'client', target: 'rgw'}},
-                    { group: 'edges', data:{ id: 'e_rgw_ispgw', source: 'rgw', target: 'ispgw'}},
-                    { group: 'edges', data:{ id: 'e_ispgw_r0', source: 'ispgw', target: 'r0'}},
-                    { group: 'edges', data:{ id: 'e_r0_r1', source: 'r0', target: 'r1'}},
-                    { group: 'edges', data:{ id: 'e_r0_r1', source: 'r0', target: 'r1'}},
-                    { group: 'edges', data:{ id: 'e_r0_r2', source: 'r0', target: 'r2'}},
-                    { group: 'edges', data:{ id: 'e_r1_r3', source: 'r1', target: 'r3'}},
-                    { group: 'edges', data:{ id: 'e_r2_r3', source: 'r2', target: 'r3'}},
-                    { group: 'edges', data:{ id: 'e_r2_r4', source: 'r2', target: 'r4'}},
-                    { group: 'edges', data:{ id: 'e_r3_r4', source: 'r3', target: 'r4'}},
-                    { group: 'edges', data:{ id: 'e_r2_dnsgw', source: 'r2', target: 'dnsgw'}},
-                    { group: 'edges', data:{ id: 'e_dnsgw_dns', source: 'dnsgw', target: 'dns'}},
-                    { group: 'edges', data:{ id: 'e_r4_webgw', source: 'r4', target: 'webgw'}},
-                    { group: 'edges', data:{ id: 'e_webgw_web', source: 'webgw', target: 'web'}},
-                   ]
-            
-          });          
-          
-          document.getElementById("randomizeButton").addEventListener("click", function(){
-            var layout = cy.layout({
-              name: 'random',
-              animate: true,
-              animationDuration: 1000
-            });
-            
-            layout.run();        
-          });          
-          
-          document.getElementById("fcoseButton").addEventListener("click", function(){
-            let qualityItem = document.getElementById("quality");
-            var layout = cy.layout({
-              name: 'fcose',
-              quality: qualityItem.options[qualityItem.selectedIndex].value,
-              randomize: !(document.getElementById("randomize").checked),
-              animate: document.getElementById("animate").checked,
-              animationEasing: 'ease-out',
-              uniformNodeDimensions: document.getElementById("uniformNodeDimensions").checked,
-              packComponents: document.getElementById("packComponents").checked,
-              tile: document.getElementById("tile").checked,
-              nodeRepulsion: parseFloat(document.getElementById("nodeRepulsion").value),
-              idealEdgeLength: parseFloat(document.getElementById("idealEdgeLength").value),
-              edgeElasticity: parseFloat(document.getElementById("edgeElasticity").value),
-              nestingFactor: parseFloat(document.getElementById("nestingFactor").value),
-              gravity: parseFloat(document.getElementById("gravity").value),
-              gravityRange: parseFloat(document.getElementById("gravityRange").value),
-              gravityCompound: parseFloat(document.getElementById("gravityCompound").value),
-              gravityRangeCompound: parseFloat(document.getElementById("gravityRangeCompound").value),
-              numIter: parseFloat(document.getElementById("numIter").value),
-              tilingPaddingVertical: parseFloat(document.getElementById("tilingPaddingVertical").value),
-              tilingPaddingHorizontal: parseFloat(document.getElementById("tilingPaddingHorizontal").value),
-              initialEnergyOnIncremental: document.getElementById("initialEnergyOnIncremental").value,
-              step:"all"
-            });
-            
-            layout.run();        
-          });
-          
+              /* Networks */
+              { group: 'nodes', data:{ id: '_net_home', type: 'network', label: "Home network", subnet: "192.168.74.0/24"}},
+              { group: 'nodes', data:{ id: '_net_isp', type: 'network', label: "ISP network"}},
+              { group: 'nodes', data:{ id: '_net_as1', type: 'network', label: "AS-1 network"}},
+              { group: 'nodes', data:{ id: '_net_as2', type: 'network', label: "AS-2 network"}},
+              { group: 'nodes', data:{ id: '_net_dns', type: 'network', label: 'DNS network'}},
+              { group: 'nodes', data:{ id: '_net_web', type: 'network', label: 'Web network'}},
+
+              /* Nodes. Network edges are auto-generated */
+              { group: 'nodes', data:{ id: 'client', label: "Client", network: "_net_home", ips: ["192.168.74.30"]}},
+              { group: 'nodes', data:{ id: 'rgw', label: "Residential gateway", network: "_net_home", ips: ["192.168.74.1"]}},
+              { group: 'nodes', data:{ id: 'ispgw', label: "ISP gateway", network: "_net_isp"}},
+              { group: 'nodes', data:{ id: 'r0', label: "Router", network: "_net_isp"}},
+              { group: 'nodes', data:{ id: 'r1', label: "Router", network: "_net_as1"}},
+              { group: 'nodes', data:{ id: 'r2', label: "Router", network: "_net_as1"}},
+              { group: 'nodes', data:{ id: 'r3', label: "Router", network: "_net_as1"}},
+              { group: 'nodes', data:{ id: 'r4', label: "Router", network: "_net_as2"}},
+              { group: 'nodes', data:{ id: 'r5', label: "Router", network: "_net_as2"}},
+              { group: 'nodes', data:{ id: 'r6', label: "Router", network: "_net_as2"}},
+              { group: 'nodes', data:{ id: 'r7', label: "Router", network: "_net_as2"}},
+              { group: 'nodes', data:{ id: 'r8', label: "Router", network: "_net_as2"}},
+              { group: 'nodes', data:{ id: 'dnsgw', label: "DNS provider's gateway", network: "_net_dns"}},
+              { group: 'nodes', data:{ id: 'dns', label: "DNS server", network: "_net_dns"}},
+              { group: 'nodes', data:{ id: 'webgw', label: "Webhost's gateway", network: "_net_web"}},
+              { group: 'nodes', data:{ id: 'web', label: "Web server", network: "_net_web"}},
+
+              /* Peers, can directly connect network nodes, or networks themselves.
+                 Peered networks would essentially be a single network physically but with some address space separation */
+              { group: 'edges', data:{ id: 'e_rgw_ispgw', source: 'rgw', target: 'ispgw'}},
+              { group: 'edges', data:{ id: 'e_r0_r1', source: 'r0', target: 'r1'}},
+              { group: 'edges', data:{ id: 'e_r2_r4', source: 'r2', target: 'r4'}},
+              { group: 'edges', data:{ id: 'e_r5_dnsgw', source: 'r5', target: 'dnsgw'}},
+              { group: 'edges', data:{ id: 'e_r7_webgw', source: 'r7', target: 'webgw'}}
+            ]
+          });     
         });
+        
+        var old_data = [];
+        var tabulator = (table, data) => {
+          data = Object.entries(data);
+          var table = d3.select('#' + table)
+          table.html("")
+          var thead = table.append('thead');
+          var	tbody = table.append('tbody');
+          if (!data.length) {
+            //console.log("No data to show");
+          } else {
+            if (table.attr('id') === 'elementInfoTable') {
+              thead.append('tr')
+                .selectAll('th')
+                .data(['Field', 'Value']).enter()
+                .append('th')
+                .text(function (column) { return column; }
+              );
+              var rows = tbody.selectAll('tr')
+                .data(data.filter(ele => {
+                  return true;//!ele[0].startsWith('_');
+                }))
+                .enter()
+                .append('tr');
+
+              var cells = rows.selectAll('td')
+                .data(function (row) {
+                  return row;
+                })
+                .enter()
+                .append('td')
+                .text(function (d) { return d; });
+            } else if (table.attr('id') === 'packetInfoTable') {
+              /**
+               * TODO: I don't want to empty and recreate this table each time
+               * Instead, I want to animate the changes to eaach row, highlighting:
+               * - deleted rows
+               * - new rows
+               * - changed values
+               * - Values that have moved (useful for identifying swaps and direction changes)
+               */
+              thead.append('tr')
+                .selectAll('th')
+                .data(['Field', 'Value']).enter()
+                .append('th')
+                .text(function (column) { return column; }
+              );
+              function data_flatten(data) {
+                let ret = []
+                for (row of data) {
+                  let name, value
+                  [name, value] = row
+                  if (!name.startsWith('_')) {
+                    if (typeof value === 'object' && '_schema_type' in value) {
+                      ret.push([name, value.value])
+                    } else {
+                      ret.push([name, value])
+                    }
+                  } else if (name === '_schema_type' && !['descriptive_field', 'raw'].some((ele) => { return ele === value })) {
+                    ret.push(["Detail", value])
+                  } else if (name === '_payload') {
+                    ret.push(...data_flatten(Object.entries(value)))
+                  }
+                }
+                return ret
+              }
+              data = data_flatten(data)
+              /*let matched_keys = -1
+              let matching = true
+              let changed_rows = []
+              let old_values = new Set()
+              let new_value = new Set()
+              console.log("Comparing", old_data, "to", data)
+              for (let i = 0; i < old_data.length && i < data.length; i += 1) {
+                old_values.add(old_data[i][1])
+                new_values.add(data[i][1])
+                if (old_data[i][0] === data[i][0]) {
+                  matched_keys += 1
+                  if (old_data[i][1] !== new_data[i][1]) {
+                    changed_rows.push(i)
+                  }
+                } else {
+                  matching = false
+                  break // Disparity between table row names observed, so give up on matching
+                }
+              }
+              console.log("Matching keys", matching_keys)*/
+              old_data = data
+              var rows = tbody.selectAll('tr')
+                .data(data)
+                .enter()
+                .append('tr')
+                .attr("class", function (d) { return d[0] === 'Detail' ? 'tableSection' : '' });
+
+              var cells = rows.selectAll('td')
+                .data(function (row) {
+                  return row;
+                })
+                .enter()
+                .append('td')
+                .text(function (d) { return d; });
+            }
+          }
+        }
       </script>
   </head>
 
   <body>
-          <h1 class="ml-2">cytoscape-fcose demo (compound)</h1>
-          <div style='width: 300px; position: absolute;'>
-            <button id="randomizeButton" class="btn btn-primary btn-sm mb-2 ml-2">Randomize</button>&nbsp &nbsp
-            <button id="fcoseButton" class="btn btn-primary btn-sm mb-2 ml-2">fCoSE</button>
-          
-            <div id="mySidepanel" class="sidepanel">
-              <table>
-                <tr>
-                  <td><span class="add-on layout-text" title="Quality of the layout"> Quality </span></td>
-                  <td>            
-                    <select id="quality" class='custom-select custom-select-sm'>
-                      <option value="draft">draft</option>
-                      <option value="default" selected="">default</option>
-                      <option value="proof">proof</option>
-                    </select>
-                  </td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Whether to enable incremental mode"> Incremental </span></td>
-                  <td>        
-                    <div class="custom-control custom-control-inline custom-checkbox">
-                      <input type="checkbox" class="custom-control-input" id="randomize" name="incremental">
-                      <label class="custom-control-label" for="randomize"></label>
-                    </div>
-                  </td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Whether to perform animation after layout"> Animate </span></td>
-                  <td>
-                    <div class="custom-control custom-control-inline custom-checkbox">
-                      <input type="checkbox" class="custom-control-input" id="animate" name="animate" checked>
-                      <label class="custom-control-label" for="animate"></label>
-                    </div>                  
-                  </td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Whether nodes are of uniform dimensions"> Uniform Node Dimensions </span></td>
-                  <td>
-                    <div class="custom-control custom-control-inline custom-checkbox">
-                      <input type="checkbox" class="custom-control-input" id="uniformNodeDimensions" name="uniformNodeDimensions">
-                      <label class="custom-control-label" for="uniformNodeDimensions"></label>
-                    </div> 
-                  </td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Whether to pack components"> Pack Components to Window </span></td>
-                  <td>
-                    <div class="custom-control custom-control-inline custom-checkbox">
-                      <input type="checkbox" class="custom-control-input" id="packComponents" name="packComponents" checked>
-                      <label class="custom-control-label" for="packComponents"></label>
-                    </div>                     
-                  </td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Whether to tile disconnected nodes"> Tile Disconnected </span></td>
-                  <td>
-                    <div class="custom-control custom-control-inline custom-checkbox">
-                      <input type="checkbox" class="custom-control-input" id="tile" name="tile" checked>
-                      <label class="custom-control-label" for="tile"></label>
-                    </div>                     
-                  </td>
-                </tr>              
-                <tr>
-                  <td><span class="add-on layout-text" title="Node repulsion (non overlapping) multiplier"> Node Repulsion </span></td>
-                  <td><input id="nodeRepulsion" class="textField form-control form-control-sm" type="text" value="4500" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Ideal (intra-graph) edge length"> Ideal Edge Length </span></td>
-                  <td><input id="idealEdgeLength" class="textField form-control form-control-sm" type="text" value="50" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Divisor to compute edge forces"> Edge Elasticity </span></td>
-                  <td><input id="edgeElasticity" class="textField form-control form-control-sm" type="text" value="0.45" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Nesting factor (multiplier) to compute ideal edge length for inter-graph edges"> Nesting Factor </span></td>
-                  <td><input id="nestingFactor" class="textField form-control form-control-sm" type="text" value="0.1" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Gravity force (constant)"> Gravity </span></td>
-                  <td><input id="gravity" class="textField form-control form-control-sm" type="text" value="0.25" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Gravity range (constant)"> Gravity Range </span></td>
-                  <td><input id="gravityRange" class="textField form-control form-control-sm" type="text" value="3.8" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Gravity force (constant) for compounds"> Compound Gravity </span></td>
-                  <td><input id="gravityCompound" class="textField form-control form-control-sm" type="text" value="1" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Gravity range (constant) for compounds"> Compound Gravity Range </span></td>
-                  <td><input id="gravityRangeCompound" class="textField form-control form-control-sm" type="text" value="1.5" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Maximum number of iterations to perform"> Number of Iterations </span></td>
-                  <td><input id="numIter" class="textField form-control form-control-sm" type="text" value="2500" size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Amount of vertical space to put between degree zero nodes during tiling"> Tiling Vertical Padding </span></td>
-                  <td><input id="tilingPaddingVertical" class="textField form-control form-control-sm" type="text" value="10" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Amount of horizontal space to put between degree zero nodes during tiling"> Tiling Horizontal Padding </span></td>
-                  <td><input id="tilingPaddingHorizontal" class="textField form-control form-control-sm" type="text" value="10" maxlength=5 size="5"></td>
-                </tr>
-                <tr>
-                  <td><span class="add-on layout-text" title="Initial cooling factor for incremental layout"> Incremental Cooling Factor </span></td>
-                  <td><input id="initialEnergyOnIncremental" class="textField form-control form-control-sm" type="text" value="0.3" maxlength=5 size="5"></td>
-                </tr>               
+          <h1 class="ml-2">Dabao</h1>
+          <nav id="navbar">
+            <button id="next" type="button" value="Next">Step</button>
+            <button id="pause" type="button" value="Pause">Start</button>
+          </nav>
+          <aside id="sidebar">
+            <h2>Info</h2>
+            <section id="packetInfo">
+              <h3>Packet info</h3>
+              <table id="packetInfoTable">
               </table>
-
-            </div>
-          </div>
+            </section>
+            <section id="elementInfo">
+              <h3>Node/edge info</h3>
+              <table id="elementInfoTable">
+              </table>
+            </section>
+          </aside>
           <div id="cy"></div>
-
   </body>
 
 </html>

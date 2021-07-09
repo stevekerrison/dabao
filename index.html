@@ -1,7 +1,7 @@
 
 <!DOCTYPE>
 <!-- Starting from https://ivis-at-bilkent.github.io/cytoscape.js-fcose/demo/demo-compound.html -->
-<html>
+<html lang="en-sg">
 
   <head>
     <title>Dabao - An educational network and packet visualiser</title>
@@ -10,20 +10,14 @@
       
       <!-- Bootstrap, popper, jQuery and filesaver - for demo purpose only -->
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
-      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>      
+      <!-- I'm not using bootstrap for anything, but have walked myself into using its CSS, for now -->
       <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">       
 
       <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
       <script src="https://unpkg.com/layout-base/layout-base.js"></script>
       <script src="https://unpkg.com/cose-base/cose-base.js"></script>
       <script src="https://unpkg.com/cytoscape-layout-utilities/cytoscape-layout-utilities.js"></script>
-      <!--<script src="cytoscape.js-fcose/cytoscape-fcose.js"></script>-->
       <script src="https://unpkg.com/cytoscape-fcose/cytoscape-fcose.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/avsdf-base"></script>
-      <script src="https://cdn.jsdelivr.net/npm/cytoscape-avsdf"></script>
-      <script src="https://cdn.jsdelivr.net/npm/cytoscape-layers"></script>
-      <script src="https://cdn.jsdelivr.net/npm/cytoscape-bubblesets"></script>
       <script src="data/simple_network/simple.js"></script>
 
       <script src="https://cdn.jsdelivr.net/npm/cytoscape-automove"></script>
@@ -468,7 +462,7 @@
                 return ret
               }
               data = data_flatten(data)
-              let matched_keys = -1
+              /*let matched_keys = -1
               let matching = true
               let changed_rows = []
               let old_values = new Set()
@@ -487,7 +481,7 @@
                   break // Disparity between table row names observed, so give up on matching
                 }
               }
-              console.log("Matching keys", matching_keys)
+              console.log("Matching keys", matching_keys)*/
               old_data = data
               var rows = tbody.selectAll('tr')
                 .data(data)

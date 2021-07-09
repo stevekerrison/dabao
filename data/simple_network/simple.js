@@ -1,9 +1,9 @@
 class DabaoActivity {
     /**
      * 
-     * @param initiator The cytocape node that is the initiator of the session/connection (or the sender if stateless)
-     * @param sender The cytocape node source of the first packet that is emitted by this activity
-     * @param receiver The cytocape node receiver of the first packet that is emitted by this activity
+     * @param initiator The cytoscape node that is the initiator of the session/connection (or the sender if stateless)
+     * @param sender The cytoscape node source of the first packet that is emitted by this activity
+     * @param receiver The cytoscape node receiver of the first packet that is emitted by this activity
      */
     constructor ({cy, initiator, sender, receiver} = {}) {
         this.cy = cy

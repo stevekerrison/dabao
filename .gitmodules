@@ -1,6 +1,0 @@
-[submodule "cytoscape.js-fcose"]
-	path = cytoscape.js-fcose
-	url = git@github.com:stevekerrison/cytoscape.js-fcose.git
-[submodule "cytoscape.js-bubblesets"]
-	path = cytoscape.js-bubblesets
-	url = https://github.com/upsetjs/cytoscape.js-bubblesets.git

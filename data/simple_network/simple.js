@@ -663,6 +663,7 @@ class dabao_packet_animation {
         this.cy.elements(':selected').unselect()
         // Clear the ARP cache
         this.cy.elements('[_arpcache]').removeData('_arpcache')
+        document.getElementById("next").disabled = this.auto
     }
 
 

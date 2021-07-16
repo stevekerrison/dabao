@@ -54,7 +54,7 @@
           right: 5px;
           top: 5px;
           height: 20px;
-          width: 200px;
+          width: 500px;
         }
 
         nav#navbar button#pause {
@@ -271,6 +271,11 @@
                 console.log("Resetting simulation and animation")
                 pktanim.reset()
                 document.getElementById("pause").innerHTML = "Start"
+              })
+              document.getElementById("lod").addEventListener("change", (e) => {
+                let lod_options = ['dns', 'udp', 'tcp_simple', 'ip', 'mac', 'arp']
+                this.data('lod', new Set(lod_options.slice(0, parseInt(e.target.value, 10) + 1)))
+                console.log(this.data('lod'), e.target.value)
               })
             },
             
@@ -510,6 +515,7 @@
   <body>
           <h1 class="ml-2">Dabao</h1>
           <nav id="navbar">
+            <label for="lod">Level of Detail:</label><input id="lod" type="range" min="4" max="5" value="5">
             <button id="next" type="button" value="Next">Step</button>
             <button id="pause" type="button" value="Pause">Start</button>
             <button id="reset" type="button" value="Reset">Reset</button>

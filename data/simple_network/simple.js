@@ -629,12 +629,13 @@ function getRandomInt(min, max) {
 }
 
 class dabao_packet_animation {
-    constructor({cy, packetid, trace, auto = true, pps = 0.5} = {}) {
+    constructor({cy, packetid, sim, auto = true, pps = 0.5} = {}) {
         this.packetid = packetid;
-        this.trace = trace
+        this.sim = sim
         this.auto = auto;
         this.packet = undefined
-        this.remote = false
+        this.remove = false
+        this.trace = this.sim.trace()
         this.itv = this.trace.next()
         this.cy = cy
         this.in_network = false
@@ -644,6 +645,24 @@ class dabao_packet_animation {
     pause() {
         this.auto = !this.auto
         if (this.auto) this.animate()
+    }
+
+    reset() {
+        // Stop animation
+        this.auto = false
+        // Start a fresh trace of the simulation
+        this.trace = this.sim.trace()
+        this.itv = this.trace.next()
+        this.in_network = false
+        this.cy.elements().stop(true)
+        // Remove packet node
+        if (this.packet) { this.packet.remove() }
+        this.packet = undefined
+        this.remove = false
+        // Unselect all elements
+        this.cy.elements(':selected').unselect()
+        // Clear the ARP cache
+        this.cy.elements('[_arpcache]').removeData('_arpcache')
     }
 
 

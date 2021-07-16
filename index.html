@@ -253,7 +253,7 @@
                 }
                 tabulator('elementInfoTable', selected.data());
               });
-              var pktanim = new dabao_packet_animation({cy: this, packetid: 'packet', trace: sim.trace(), auto: false}); //TODO: Make packet animation generator friendly
+              var pktanim = new dabao_packet_animation({cy: this, packetid: 'packet', sim: sim, auto: false}); //TODO: Make packet animation generator friendly
               document.getElementById("next").addEventListener("click", (e) => {
                 pktanim.animate();
                 document.getElementById("pause").innerHTML = 'Resume'
@@ -267,6 +267,11 @@
                 }
                 pktanim.pause();
               });
+              document.getElementById("reset").addEventListener("click", (e) => {
+                console.log("Resetting simulation and animation")
+                pktanim.reset()
+                document.getElementById("pause").innerHTML = "Start"
+              })
             },
             
             // demo your layout
@@ -507,6 +512,7 @@
           <nav id="navbar">
             <button id="next" type="button" value="Next">Step</button>
             <button id="pause" type="button" value="Pause">Start</button>
+            <button id="reset" type="button" value="Reset">Reset</button>
           </nav>
           <aside id="sidebar">
             <h2>Info</h2>
